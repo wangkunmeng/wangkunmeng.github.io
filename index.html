@@ -263,6 +263,203 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/06/04/调试九法-笔记/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="wangkm">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="wangkm's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/06/04/调试九法-笔记/" itemprop="url">调试九法-笔记</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-06-04T09:41:55+08:00">
+                2018-06-04
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a><strong>前言</strong></h1><pre><code>软件开发者路线图看完以后，我开启了接下来的读书之路。一周时间准确的说是6天终于拿下这个山头。
+废话不多说，这本书是一本从事编程行业一本经典书籍————依然不是一本工具书。它能指导我们如何快速的查找工作中的BUG，并把调试的规格简明扼要外加故事的手段归纳为九条规则。
+</code></pre><h2 id="规则1-理解系统"><a href="#规则1-理解系统" class="headerlink" title="规则1 理解系统"></a>规则1 理解系统</h2><pre><code>通过阅读手册或者其它方式理解系统，能使我们避免很多低级的错误，并能对一些问题有一定的处理方式，以及帮助我们能更好的使用系统。
+此规则又分为以下几个要点:
+·阅读手册
+·仔细阅读每个细节
+·掌握基础知识
+·了解工作流程
+·了解工具
+·查阅细节
+</code></pre><h2 id="规则2-制造失败"><a href="#规则2-制造失败" class="headerlink" title="规则2 制造失败"></a>规则2 制造失败</h2><blockquote>
+<p>“什么也比不上直接去的的证据来得重要。”————福尔摩斯，《血色的研究》</p>
+</blockquote>
+<pre><code>制造失败，能使我们观察错误，并专心的排查失败的原因，以及作为是否修复问题的依据。
+此规则又分为以下几个要点:
+·制造失败
+·从头开始
+·引发失败
+·不模拟失败
+·查找不受控制的条件
+·仔细观察失败
+·不过于相信统计数据
+·不怀疑BUG发生的触发点
+·保存好已经使用的调试工具
+</code></pre><h2 id="规则3-不要想，而要看"><a href="#规则3-不要想，而要看" class="headerlink" title="规则3 不要想，而要看"></a>规则3 不要想，而要看</h2><blockquote>
+<p>亲眼看到底层的失败是非常重要的。如果你猜测失败是如何发生的，那常常会修复一些根不是BUG的问题。这样的修复不仅不会解决问题，而且还会浪费时间和金钱，甚至会破坏其他地方。请记住，不要这样做。————选自本书</p>
+</blockquote>
+<pre><code>此规则又分为以下几个要点:
+·观察失败
+·查看细节
+·对系统进行插装
+·注意汉森堡不准原则
+·勇于猜想，丹猜想只是为了确定搜索的重要目标
+</code></pre><h2 id="规则4-分而治之"><a href="#规则4-分而治之" class="headerlink" title="规则4 分而治之"></a>规则4 分而治之</h2><pre><code>把问题分割处理，有力于快速定位失败产生的原因，节约时间。有序序列的二分法和顺序查找的效率对比。
+此规则又分为以下几个要点:
+·确定问题的查找范围
+·逐步缩小搜索范围
+·确定搜索范围内问题区域
+·使用易于查看的测试模式
+·从有问题的一端开始搜索
+·修复已经发现的BUG
+·首先消除特定类型的BUG
+</code></pre><h2 id="规则5-一次只改一个地方"><a href="#规则5-一次只改一个地方" class="headerlink" title="规则5 一次只改一个地方"></a>规则5 一次只改一个地方</h2><pre><code>每次修改，只应修复和此次失败相关的部分。对于有代码重构症的人要忍住自己双手去修改BUG，完全遵守此规则很难，不过也有失之东隅收之桑榆。
+此规则又分为以下几个要点:
+·隔离关键因素
+·明确问题点前不急于修改系统
+·一次只改一个测试
+·对比正常系统
+·记录所作修改的问题点
+</code></pre><h2 id="规则6-保持审计跟踪"><a href="#规则6-保持审计跟踪" class="headerlink" title="规则6 保持审计跟踪"></a>规则6 保持审计跟踪</h2><pre><code>对每次测试的条件和结果做记录和分类，有时会起到意想不到的效果。
+此规则又分为以下几个要点:
+·记录测试操作的流程、结果
+·关注细节
+·事件记录关联到一起
+·利用设计的审计跟踪
+·把事情记录下来
+</code></pre><h2 id="规则7-检查插头"><a href="#规则7-检查插头" class="headerlink" title="规则7 检查插头"></a>规则7 检查插头</h2><blockquote>
+<p>“没有什么比一个显而易见的事实更能迷惑人了。”————福尔摩斯，《博斯科姆比溪谷秘案》</p>
+</blockquote>
+<pre><code>显而易见的错误，往往灯下黑。
+此规则又分为以下几个要点:
+·质疑自己的假设
+·从头开始检查
+·对工具进行测试
+</code></pre><h2 id="规则8-获得全新观点"><a href="#规则8-获得全新观点" class="headerlink" title="规则8 获得全新观点"></a>规则8 获得全新观点</h2><pre><code>一人计短两人技长，我们可以从其他人那边获取新的观点。
+此规则又分为以下几个要点:
+·帮助无处不在
+·放下面子
+·主动征求别人的意见
+·报告症状，不要夹杂自己主观观点
+·不缺的的判断，可以作为补充
+</code></pre><h2 id="规则9-如果不修复BUG，它将依然存在"><a href="#规则9-如果不修复BUG，它将依然存在" class="headerlink" title="规则9 如果不修复BUG，它将依然存在"></a>规则9 如果不修复BUG，它将依然存在</h2><pre><code>我们的目标是解决BUG，而不是掩盖BUG。不明确BUG产生的原因，巧合的方式BUG被掩盖，BUG依然存在，会被再次触发。
+此规则又分为以下几个要点:
+·检查问题是够被修复
+·查证自己的修改
+·明确BUG从来不会自己消失
+·从根本上解决问题
+·对过程进行修复
+</code></pre>
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/05/30/学习计划/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -344,7 +541,7 @@
 7.学习 掌握css一些基本语法 时间：7~10天
 </code></pre><h2 id="目前状态"><a href="#目前状态" class="headerlink" title="目前状态"></a>目前状态</h2><h3 id="调试九法-软硬件错误排查之道"><a href="#调试九法-软硬件错误排查之道" class="headerlink" title="调试九法-软硬件错误排查之道"></a>调试九法-软硬件错误排查之道</h3><pre><code>2018.5.29 1-13页
 2018.5.30 14-27页
-2018.5.31 28-
+2018.5.31 28-41页
 </code></pre>
           
         
@@ -707,7 +904,7 @@ TCP/IP网络编程 尹圣雨
           
             <div class="site-state-item site-state-posts">
               <a href="/archives/">
-                <span class="site-state-item-count">3</span>
+                <span class="site-state-item-count">4</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
