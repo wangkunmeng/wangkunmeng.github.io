@@ -65,6 +65,71 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-NodeJS基于Redis广播服的设计思路" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/06/20/NodeJS基于Redis广播服的设计思路/" class="article-date">
+  <time datetime="2018-06-20T05:14:43.000Z" itemprop="datePublished">2018-06-20</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/06/20/NodeJS基于Redis广播服的设计思路/">NodeJS基于Redis广播服的设计思路</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a><strong>前言</strong></h1><pre><code>分布式集群是NodeJS游戏服务端一个基本要素，多进程间玩家通讯是游戏服的一个核心问题。目前常见的多进程广播数据的方式一种是通过RPC，另一种是Redis，本文主要讲通过使用Redis来实现。
+</code></pre><h2 id="服务器设计基本原理"><a href="#服务器设计基本原理" class="headerlink" title="服务器设计基本原理"></a>服务器设计基本原理</h2><pre><code>1.广播服务器，只做登录、心跳、顶号、下线、广播数据基本逻辑功能。登录、心跳、顶号、下线是为了广播数据做辅助功能。
+2.单纯广播服务器一般是为短连接主服务器服务的，长连接的主服务器除了做广播服还要做链接保持服，同样不做其它逻辑。
+3.其它逻辑，比如向好友发信息，应交给逻辑服务器GameServer做。eg:逻辑服收到给好友发信息消息，判断完毕，具体向某个人广播时才向广播服指定人广播。
+4.通过Redis的发布订阅方式，监听指定channel来实现。
+</code></pre><h2 id="一个全服聊天服的设计思路"><a href="#一个全服聊天服的设计思路" class="headerlink" title="一个全服聊天服的设计思路"></a>一个全服聊天服的设计思路</h2><pre><code>1.Redis发布消息时应明确ServerID_ChanneelName,以缩小广播范围。
+2.发布的消息应包含消息包名，已为了客户端做区分
+3.单独向指定人广播的消息应指定目标人
+4.设计一个ServerRoom的房间类，已Server为单位Redis订阅各自独立的ServerID_ChanneelName
+5.玩家登陆后，查找自身ServerID对应的房间，若没有则需要创建并加入此房间。
+6.每个聊天服需要订阅ChanneelName比如Notice以便做全服通知
+
+eg:发布
+向1001服的UID为1001@234, 1001@100的玩家聊天
+ChanneelName：&quot;1001_Chat&quot;
+{
+    packageName: “fiend.chat”, //包名
+    msg:&quot;你好a&quot;, //广播内容
+    &quot;to&quot;:[1001@234, 1001@100]/&apos;all&apos;, //接收单个uid或多个UID数组,当为all时表示当前channel所有人
+}
+ChanneelName：&quot;Notice&quot;
+{
+    packageName: “notice.item”, //包名
+    msg:&quot;你好a&quot;, //广播内容
+}
+eg:订阅
+1.各个订阅ChanneelName：&quot;1001_Chat&quot;的聊天服收到订阅消息，根据to字段判断接收人群，再向目标人发送消息
+2.各个订阅ChanneelName：&quot;Notice&quot;的聊天服,遍历所有ServerRoom向所有人广播
+</code></pre><h1 id="结束语"><a href="#结束语" class="headerlink" title="结束语"></a>结束语</h1><pre><code>比较仓促，还不会插入示意图，思路应该说清楚了，再具体还是文采匮乏啊！
+</code></pre>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2018/06/20/NodeJS基于Redis广播服的设计思路/" data-id="cjimobeck0000ikvnc1j8oa4k" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-基于Json的数据同步" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2018/06/14/基于Json的数据同步/" class="article-date">
@@ -182,7 +247,7 @@ eg:
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/06/14/基于Json的数据同步/" data-id="cjidx7rqe0000i8vnvob1drob" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/06/14/基于Json的数据同步/" data-id="cjimobed20004ikvnfd87j07f" class="article-share-link">Share</a>
       
       
     </footer>
@@ -296,7 +361,7 @@ eg:
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/06/04/调试九法-笔记/" data-id="cjidx7rqm0002i8vnctdyt06z" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/06/04/调试九法-笔记/" data-id="cjimobecz0002ikvnq1s6c14d" class="article-share-link">Share</a>
       
       
     </footer>
@@ -343,7 +408,7 @@ eg:
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/05/30/学习计划/" data-id="cjidx7rqk0001i8vn52ndpdtq" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/05/30/学习计划/" data-id="cjimobecy0001ikvnn3kywp8g" class="article-share-link">Share</a>
       
       
     </footer>
@@ -388,7 +453,7 @@ TCP/IP网络编程 尹圣雨
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/05/30/书籍目录/" data-id="cjidx7rqn0003i8vn89nmu0ti" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/05/30/书籍目录/" data-id="cjimobed00003ikvnx0k6hnmu" class="article-share-link">Share</a>
       
       
     </footer>
@@ -458,7 +523,7 @@ TCP/IP网络编程 尹圣雨
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/05/25/软件开发者路线图-笔记/" data-id="cjidx7rqo0004i8vnlkhfcuxu" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/05/25/软件开发者路线图-笔记/" data-id="cjimobed30005ikvnzvfuhoyc" class="article-share-link">Share</a>
       
       
     </footer>
@@ -499,6 +564,10 @@ TCP/IP网络编程 尹圣雨
       <ul>
         
           <li>
+            <a href="/2018/06/20/NodeJS基于Redis广播服的设计思路/">NodeJS基于Redis广播服的设计思路</a>
+          </li>
+        
+          <li>
             <a href="/2018/06/14/基于Json的数据同步/">基于Json的数据同步</a>
           </li>
         
@@ -512,10 +581,6 @@ TCP/IP网络编程 尹圣雨
         
           <li>
             <a href="/2018/05/30/书籍目录/">书籍目录</a>
-          </li>
-        
-          <li>
-            <a href="/2018/05/25/软件开发者路线图-笔记/">软件开发者路线图-笔记</a>
           </li>
         
       </ul>
