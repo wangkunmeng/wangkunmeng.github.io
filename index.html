@@ -88,11 +88,11 @@
     <div class="article-entry" itemprop="articleBody">
       
         <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a><strong>前言</strong></h1><pre><code>分布式集群是NodeJS游戏服务端一个基本要素，多进程间玩家通讯是游戏服的一个核心问题。目前常见的多进程广播数据的方式一种是通过RPC，另一种是Redis，本文主要讲通过使用Redis来实现。
-</code></pre><h2 id="服务器设计基本原理"><a href="#服务器设计基本原理" class="headerlink" title="服务器设计基本原理"></a>服务器设计基本原理</h2><pre><code>1.广播服务器，只做登录、心跳、顶号、下线、广播数据基本逻辑功能。登录、心跳、顶号、下线是为了广播数据做辅助功能。
+</code></pre><h2 id="广播服设计基本规则"><a href="#广播服设计基本规则" class="headerlink" title="广播服设计基本规则"></a>广播服设计基本规则</h2><pre><code>1.广播服务器，只做登录、心跳、顶号、下线、广播数据基本逻辑功能。登录、心跳、顶号、下线是为了广播数据做辅助功能。
 2.单纯广播服务器一般是为短连接主服务器服务的，长连接的主服务器除了做广播服还要做链接保持服，同样不做其它逻辑。
 3.其它逻辑，比如向好友发信息，应交给逻辑服务器GameServer做。eg:逻辑服收到给好友发信息消息，判断完毕，具体向某个人广播时才向广播服指定人广播。
 4.通过Redis的发布订阅方式，监听指定channel来实现。
-</code></pre><h2 id="一个全服聊天服的设计思路"><a href="#一个全服聊天服的设计思路" class="headerlink" title="一个全服聊天服的设计思路"></a>一个全服聊天服的设计思路</h2><pre><code>1.Redis发布消息时应明确ServerID_ChanneelName,以缩小广播范围。
+</code></pre><h2 id="一个全服广播服的设计思路"><a href="#一个全服广播服的设计思路" class="headerlink" title="一个全服广播服的设计思路"></a>一个全服广播服的设计思路</h2><pre><code>1.Redis发布消息时应明确ServerID_ChanneelName,以缩小广播范围。
 2.发布的消息应包含消息包名，已为了客户端做区分
 3.单独向指定人广播的消息应指定目标人
 4.设计一个ServerRoom的房间类，已Server为单位Redis订阅各自独立的ServerID_ChanneelName
