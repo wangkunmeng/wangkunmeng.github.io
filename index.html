@@ -65,6 +65,77 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-NodeJS公会服集群的设计思路" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/06/25/NodeJS公会服集群的设计思路/" class="article-date">
+  <time datetime="2018-06-25T01:55:34.000Z" itemprop="datePublished">2018-06-25</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/06/25/NodeJS公会服集群的设计思路/">NodeJS公会服集群的设计思路</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a><strong>前言</strong></h1><p>公会是游戏功能中玩家数据交互最为频繁的一个功能，如何让多个玩家操作同一份数据有序而不出错是个很值得非常重要的问题。NodeJS服务器由于无阻塞、单线程、异步、集群的特点使得此功能难点又增加N个百分点，本文分享自己单进程公会服的设计经验。</p>
+<h2 id="核心问题"><a href="#核心问题" class="headerlink" title="核心问题"></a>核心问题</h2><ul>
+<li>其它服务器和公会服交互</li>
+<li>公会服如何承担访问压力</li>
+<li>公会玩家基本信息同步问题</li>
+<li>同一公会中会长A请求把会员C设为副会长和副会长B把会员C设为大队长，操作如何保证会员C最终职位为副会长，副会长B操作被否决。</li>
+<li>公会A和公会B同时批准玩家C入会，如何保障先到先得，玩家C只在一个公会。</li>
+</ul>
+<h3 id="进程间通信"><a href="#进程间通信" class="headerlink" title="进程间通信"></a>进程间通信</h3><ul>
+<li>传统方式采用RPC方式,比如客户端GameServer访问需要修改公会数据</li>
+<li>通过Redis发布订阅，比如一些广播请求</li>
+</ul>
+<h3 id="服务器压力"><a href="#服务器压力" class="headerlink" title="服务器压力"></a>服务器压力</h3><ul>
+<li>公会服除内存存放数据外另外在Redis缓存维护一份供其它进程读取。</li>
+<li>客户端不和公会服连接，所有操作都是通过GameServer转发</li>
+<li>客户端对公会的查询操作，通过GameServer访问Redis即可</li>
+<li>GameServer承担客户端消息的基本容错，只有存在修改数据时才访问公会服</li>
+<li>公会成员、公会申请、公会操作日志等数据量较大的UI上做为子标签页打开访问</li>
+</ul>
+<h3 id="玩家信息同步问题"><a href="#玩家信息同步问题" class="headerlink" title="玩家信息同步问题"></a>玩家信息同步问题</h3><ul>
+<li>创建公会成员数据对象，分别有姓名、等级、在线时间、公会ID、职位、入会时间、公会贡献等属性</li>
+<li>没有申请、创建、加入公会的没有此对象，</li>
+<li>创建公会成员不和公会对象直接绑定,公会只是公会成员的一个属性</li>
+<li>玩家上下线同步此对象数据，如有特殊需求，可做策略比如每3小时同步一次数据</li>
+</ul>
+<h3 id="数据锁问题"><a href="#数据锁问题" class="headerlink" title="数据锁问题"></a>数据锁问题</h3><ul>
+<li>每个公会对象和每个公会成员对象增加一个属性，标识是否为不可写状态</li>
+<li>每个公会对象和每个公会成员对象增加一个消息队列，用来存放等待的请求</li>
+<li>公会对象、公会成员对象为不可写状态时，数据访问需要等待直到状态解除</li>
+<li>等待状态保护机制一定时间内不返回，请求当失败返回</li>
+<li>修改公会加公会锁，修改玩家加玩家锁，同时修改时，需要同时加，访问也要等待所有状态解除</li>
+</ul>
+<h2 id="瓶颈"><a href="#瓶颈" class="headerlink" title="瓶颈"></a>瓶颈</h2><p>由于是采用单进程，虽然有策略分担了大部分压力，但终究对于大部分玩家都在操作工作时会出问题。所以，对公会的功能开发需要仔细考虑，比如公会功能放到一定等级才开放，公会部分操作设置冷却时间，部分功能可以考虑利用redis在其它进程实现。而这进一步，则需要的更加缜密的思维，以及天才般的想法。</p>
+<h2 id="关于公会集群的想法"><a href="#关于公会集群的想法" class="headerlink" title="关于公会集群的想法"></a>关于公会集群的想法</h2><p>由于公会都有固定的ID，我们可以通过Hash算法使每次对公会的操作准确命中对应的进程。当然，肯定还有其它坑要踩，比如两个公会操作同一个玩家数据时，怎么对应。知识范围有限，还未有有效的方法。</p>
+<h1 id="结束语"><a href="#结束语" class="headerlink" title="结束语"></a>结束语</h1><p>又到了说再见的时候了，此方案果然经不起仔细的推敲，知识掌握程度限制了对自己的思维能力。技术能力又使自己不能干脆的做出用C++或者GO语言实在公会服的设计决定。<br>总之，思路依然幼稚，贻笑大方了。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2018/06/25/NodeJS公会服集群的设计思路/" data-id="cjitm4ivq0000g8vnpw3scc9r" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-NodeJS基于Redis广播服的设计思路" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2018/06/20/NodeJS基于Redis广播服的设计思路/" class="article-date">
@@ -120,7 +191,7 @@ eg:订阅
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/06/20/NodeJS基于Redis广播服的设计思路/" data-id="cjimobeck0000ikvnc1j8oa4k" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/06/20/NodeJS基于Redis广播服的设计思路/" data-id="cjitm4iw60005g8vnvavx7by2" class="article-share-link">Share</a>
       
       
     </footer>
@@ -247,7 +318,7 @@ eg:
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/06/14/基于Json的数据同步/" data-id="cjimobed20004ikvnfd87j07f" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/06/14/基于Json的数据同步/" data-id="cjitm4ivq0002g8vnaqsb0qx4" class="article-share-link">Share</a>
       
       
     </footer>
@@ -361,7 +432,7 @@ eg:
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/06/04/调试九法-笔记/" data-id="cjimobecz0002ikvnq1s6c14d" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/06/04/调试九法-笔记/" data-id="cjitm4ivq0003g8vng79mzccl" class="article-share-link">Share</a>
       
       
     </footer>
@@ -408,7 +479,7 @@ eg:
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/05/30/学习计划/" data-id="cjimobecy0001ikvnn3kywp8g" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/05/30/学习计划/" data-id="cjitm4ivq0001g8vndd4ytmpg" class="article-share-link">Share</a>
       
       
     </footer>
@@ -453,7 +524,7 @@ TCP/IP网络编程 尹圣雨
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/05/30/书籍目录/" data-id="cjimobed00003ikvnx0k6hnmu" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/05/30/书籍目录/" data-id="cjitm4iw60004g8vnqzzl38i6" class="article-share-link">Share</a>
       
       
     </footer>
@@ -523,7 +594,7 @@ TCP/IP网络编程 尹圣雨
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/05/25/软件开发者路线图-笔记/" data-id="cjimobed30005ikvnzvfuhoyc" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/05/25/软件开发者路线图-笔记/" data-id="cjitm4iw60006g8vngo7yqcqi" class="article-share-link">Share</a>
       
       
     </footer>
@@ -564,6 +635,10 @@ TCP/IP网络编程 尹圣雨
       <ul>
         
           <li>
+            <a href="/2018/06/25/NodeJS公会服集群的设计思路/">NodeJS公会服集群的设计思路</a>
+          </li>
+        
+          <li>
             <a href="/2018/06/20/NodeJS基于Redis广播服的设计思路/">NodeJS基于Redis广播服的设计思路</a>
           </li>
         
@@ -577,10 +652,6 @@ TCP/IP网络编程 尹圣雨
         
           <li>
             <a href="/2018/05/30/学习计划/">学习计划</a>
-          </li>
-        
-          <li>
-            <a href="/2018/05/30/书籍目录/">书籍目录</a>
           </li>
         
       </ul>
