@@ -213,98 +213,21 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><pre><code>游戏服务器与客户端的数据同步，各家有各家的秘籍。下面我就分享一下http服务器和客户端基于JSON文件的数据同步的思路。
-</code></pre><h2 id="何时同步"><a href="#何时同步" class="headerlink" title="何时同步"></a>何时同步</h2><pre><code>http短连接，就是每次返回客户端消息时，包同步数据带回去。同步数据放到消息返回前。
-</code></pre><h2 id="Json文件制作和格式剖析"><a href="#Json文件制作和格式剖析" class="headerlink" title="Json文件制作和格式剖析"></a>Json文件制作和格式剖析</h2><pre><code>card.json
-{
-    TagName: card //此为json标识，前后端解析识别
-    keys: [ //keys为Json具体数据键值
-        {
-            keyName: &apos;GUID&apos;,
-            comment: &apos;唯一ID&apos;, //同步数据时用户标识此OBj，全局唯一
-            type: &apos;String&apos;,
-            value: &apos;&apos;
-        },
-        {
-            keyName: &apos;uid&apos;, 
-            comment: &apos;玩家UID&apos;, //基本说明，利于维护
-            type: &apos;Number&apos;, //数据类型，可做基本校验
-            value: 10000, //初始数据默认值,
-        },
-        {
-            keyName: &apos;level&apos;,
-            comment: &apos;等级&apos;,
-            type: &apos;Number&apos;,
-            value: 0
-        },
-        {
-            keyName: &apos;ctSkin&apos;,
-            comment: &apos;皮肤&apos;,
-            type: &apos;Array&apos;,
-            value: []
-        }
-    ]
-}
-</code></pre><h2 id="Json文件设计对应Obj格式"><a href="#Json文件设计对应Obj格式" class="headerlink" title="Json文件设计对应Obj格式"></a>Json文件设计对应Obj格式</h2><pre><code>简单描述下，JSON文件对应的Obj对象怎么设计
-{
-    tagName: card, //obj对应JSON文件名字
-    keyIndex: { //同步时需要记录变更的数据位置，比直接传keyName要好
-        GUID:0,
-        uid：1,
-        level: 2,
-        ctSkin: 3,
-    },
-    keyValue: [&apos;10001@10000&apos;, 10000,  5, []] //本地保存，此OBj所有数据
-    changeKeys: [2] //变更了那些Key
-    function syncChangeToClient () {
-        //简单的算法对应完毕
-        [变更的JSON原型对应怎么解析，[[变更的位置，变更后数据格式]，[变更的位置，变更后数据格式]]，全局索引GUID（用来和多个卡牌做区分）]
-        //卡牌&apos;10001@10000&apos;索引的对象，数据1位置变更为10
-        return [&apos;card&apos;, [[1, 10]], &apos;10001@10000&apos;],
-    }
-    function syncToClient () {
-        //简单的算法对应完毕
-        [JSON原型名字，[当前所有数据]]
-        return [&apos;card&apos;, [&apos;10001@10000&apos;, 10000,  5, []]],
-    }
-}
-</code></pre><h2 id="同步的类型"><a href="#同步的类型" class="headerlink" title="同步的类型"></a>同步的类型</h2><pre><code>同步需要只要需要3个数据表示出，增加[1]、删除[2]、更新[3]
-</code></pre><h3 id="增加"><a href="#增加" class="headerlink" title="增加"></a>增加</h3><pre><code>这种增加，一般都是把新生成Obj全部同步给客户端。
-eg:
-{
-    1:[ //数组，为了支持一次同步所有增加、删除、更新
-        obj.syncToClient();//每一个增加的对象
-        obj.syncToClient();//每一个增加的对象
-        ...
-    ]
-}
-</code></pre><h3 id="删除"><a href="#删除" class="headerlink" title="删除"></a>删除</h3><pre><code>删除Obj一般只需要提供tagName外加GUID即可
-eg:
-{
-    2:[ //数组，为了支持一次同步所有增加、删除、更新
-        [
-           card，&apos;10001@10000&apos;
-        ],
-        ...
-    ]
-}
-</code></pre><h3 id="更新"><a href="#更新" class="headerlink" title="更新"></a>更新</h3><pre><code>更新需要提供tagName,GUID,以及每个更新的Key索引和最后的值
-eg:
-{
-    3:[ //数组，为了支持一次同步所有增加、删除、更新
-        obj.syncChangeToClient();//每一个更新的对象
-        obj.syncChangeToClient();//每一个更新的对象
-    ]
-}
-</code></pre><h2 id="同步的基础规则"><a href="#同步的基础规则" class="headerlink" title="同步的基础规则"></a>同步的基础规则</h2><pre><code>1.更新后删除的,数据不同步更新的字段，只同步删除
-2.单个Obj多次更新的，每个Key只同步最后值，一次同步完毕
-3.增加后更新的，只同步增加全部属性
-4.增加后删除的，不同步数据
-5.删除又增加的，理论不出现，但要同步增加的数据
-6.增加、同步、删除各个key内有数据才有，比如只有增加同步只需key1就行,都有的话，就是{1：[]，2：[]，3：[]}
-7.每次同步完毕都要清除本书数据变更状态
-</code></pre><h1 id="结束语"><a href="#结束语" class="headerlink" title="结束语"></a>结束语</h1><pre><code>思路还是比较乱，设计还是不是很成熟。终究是没有实际代码去验证，自己也很遗憾，等后续有成品东西出来，再接着验证去分享。
-</code></pre>
+        <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>游戏服务器与客户端的数据同步，各家有各家的秘籍。下面我就分享一下http服务器和客户端基于JSON文件的数据同步的思路。</p>
+<h2 id="何时同步"><a href="#何时同步" class="headerlink" title="何时同步"></a>何时同步</h2><p>http短连接，就是每次返回客户端消息时，包同步数据带回去。同步数据放到消息返回前。</p>
+<h2 id="Json文件制作和格式剖析"><a href="#Json文件制作和格式剖析" class="headerlink" title="Json文件制作和格式剖析"></a>Json文件制作和格式剖析</h2><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">card.json</span><br><span class="line">&#123;</span><br><span class="line">    TagName: card //此为json标识，前后端解析识别</span><br><span class="line">    keys: [ //keys为Json具体数据键值</span><br><span class="line">        &#123;</span><br><span class="line">            keyName: 'GUID',</span><br><span class="line">            comment: '唯一ID', //同步数据时用户标识此OBj，全局唯一</span><br><span class="line">            type: 'String',</span><br><span class="line">            value: ''</span><br><span class="line">        &#125;,</span><br><span class="line">        &#123;</span><br><span class="line">            keyName: 'uid', </span><br><span class="line">            comment: '玩家UID', //基本说明，利于维护</span><br><span class="line">            type: 'Number', //数据类型，可做基本校验</span><br><span class="line">            value: 10000, //初始数据默认值,</span><br><span class="line">        &#125;,</span><br><span class="line">        &#123;</span><br><span class="line">            keyName: 'level',</span><br><span class="line">            comment: '等级',</span><br><span class="line">            type: 'Number',</span><br><span class="line">            value: 0</span><br><span class="line">        &#125;,</span><br><span class="line">        &#123;</span><br><span class="line">            keyName: 'ctSkin',</span><br><span class="line">            comment: '皮肤',</span><br><span class="line">            type: 'Array',</span><br><span class="line">            value: []</span><br><span class="line">        &#125;</span><br><span class="line">    ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="Json文件设计对应Obj格式"><a href="#Json文件设计对应Obj格式" class="headerlink" title="Json文件设计对应Obj格式"></a>Json文件设计对应Obj格式</h2><p>简单描述下，JSON文件对应的Obj对象怎么设计</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    tagName: card, <span class="comment">//obj对应JSON文件名字</span></span><br><span class="line">    keyIndex: &#123; <span class="comment">//同步时需要记录变更的数据位置，比直接传keyName要好</span></span><br><span class="line">        GUID:<span class="number">0</span>,</span><br><span class="line">        uid：<span class="number">1</span>,</span><br><span class="line">        level: <span class="number">2</span>,</span><br><span class="line">        ctSkin: <span class="number">3</span>,</span><br><span class="line">    &#125;,</span><br><span class="line">    keyValue: [<span class="string">'10001@10000'</span>, <span class="number">10000</span>,  <span class="number">5</span>, []] <span class="comment">//本地保存，此OBj所有数据</span></span><br><span class="line">    changeKeys: [<span class="number">2</span>] <span class="comment">//变更了那些Key</span></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">syncChangeToClient</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="comment">//简单的算法对应完毕</span></span><br><span class="line">        [变更的<span class="built_in">JSON</span>原型对应怎么解析，[[变更的位置，变更后数据格式]，[变更的位置，变更后数据格式]]，全局索引GUID（用来和多个卡牌做区分）]</span><br><span class="line">        <span class="comment">//卡牌'10001@10000'索引的对象，数据1位置变更为10</span></span><br><span class="line">        <span class="keyword">return</span> [<span class="string">'card'</span>, [[<span class="number">1</span>, <span class="number">10</span>]], <span class="string">'10001@10000'</span>],</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">syncToClient</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="comment">//简单的算法对应完毕</span></span><br><span class="line">        [<span class="built_in">JSON</span>原型名字，[当前所有数据]]</span><br><span class="line">        <span class="keyword">return</span> [<span class="string">'card'</span>, [<span class="string">'10001@10000'</span>, <span class="number">10000</span>,  <span class="number">5</span>, []]],</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="同步的类型"><a href="#同步的类型" class="headerlink" title="同步的类型"></a>同步的类型</h2><p>同步需要只要需要3个数据表示出，增加[1]、删除[2]、更新[3]</p>
+<h3 id="增加"><a href="#增加" class="headerlink" title="增加"></a>增加</h3><p>这种增加，一般都是把新生成Obj全部同步给客户端。<br>eg:</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="number">1</span>:[ <span class="comment">//数组，为了支持一次同步所有增加、删除、更新</span></span><br><span class="line">        obj.syncToClient();<span class="comment">//每一个增加的对象</span></span><br><span class="line">        obj.syncToClient();<span class="comment">//每一个增加的对象</span></span><br><span class="line">        ...</span><br><span class="line">    ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="删除"><a href="#删除" class="headerlink" title="删除"></a>删除</h3><p>删除Obj一般只需要提供tagName外加GUID即可<br>eg:</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="number">2</span>:[ <span class="comment">//数组，为了支持一次同步所有增加、删除、更新</span></span><br><span class="line">        [</span><br><span class="line">            card，<span class="string">'10001@10000'</span></span><br><span class="line">        ],</span><br><span class="line">        ...</span><br><span class="line">    ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="更新"><a href="#更新" class="headerlink" title="更新"></a>更新</h3><p>更新需要提供tagName,GUID,以及每个更新的Key索引和最后的值<br>eg:</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="number">3</span>:[ <span class="comment">//数组，为了支持一次同步所有增加、删除、更新</span></span><br><span class="line">        obj.syncChangeToClient();<span class="comment">//每一个更新的对象</span></span><br><span class="line">        obj.syncChangeToClient();<span class="comment">//每一个更新的对象</span></span><br><span class="line">    ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="同步的基础规则"><a href="#同步的基础规则" class="headerlink" title="同步的基础规则"></a>同步的基础规则</h2><p>1.更新后删除的,数据不同步更新的字段，只同步删除<br>2.单个Obj多次更新的，每个Key只同步最后值，一次同步完毕<br>3.增加后更新的，只同步增加全部属性<br>4.增加后删除的，不同步数据<br>5.删除又增加的，理论不出现，但要同步增加的数据<br>6.增加、同步、删除各个key内有数据才有，比如只有增加同步只需key1就行,都有的话，就是{1：[]，2：[]，3：[]}<br>7.每次同步完毕都要清除本书数据变更状态</p>
+<h1 id="结束语"><a href="#结束语" class="headerlink" title="结束语"></a>结束语</h1><p>思路还是比较乱，设计还是不是很成熟。终究是没有实际代码去验证，自己也很遗憾，等后续有成品东西出来，再接着验证去分享。</p>
+
       
     </div>
     <footer class="article-footer">
@@ -340,85 +263,94 @@ eg:
     
     <div class="article-entry" itemprop="articleBody">
       
-        <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><pre><code>软件开发者路线图看完以后，我开启了接下来的读书之路。一周时间准确的说是6天终于拿下这个山头。
-废话不多说，这本书是一本从事编程行业一本经典书籍————依然不是一本工具书。它能指导我们如何快速的查找工作中的BUG，并把调试的规格简明扼要外加故事的手段归纳为九条规则。
-</code></pre><h2 id="规则1-理解系统"><a href="#规则1-理解系统" class="headerlink" title="规则1 理解系统"></a>规则1 理解系统</h2><pre><code>通过阅读手册或者其它方式理解系统，能使我们避免很多低级的错误，并能对一些问题有一定的处理方式，以及帮助我们能更好的使用系统。
-此规则又分为以下几个要点:
-·阅读手册
-·仔细阅读每个细节
-·掌握基础知识
-·了解工作流程
-·了解工具
-·查阅细节
-</code></pre><h2 id="规则2-制造失败"><a href="#规则2-制造失败" class="headerlink" title="规则2 制造失败"></a>规则2 制造失败</h2><blockquote>
+        <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>软件开发者路线图看完以后，我开启了接下来的读书之路。一周时间准确的说是6天终于拿下这个山头。<br>废话不多说，这本书是一本从事编程行业一本经典书籍————依然不是一本工具书。它能指导我们如何快速的查找工作中的BUG，并把调试的规格简明扼要外加故事的手段归纳为九条规则。</p>
+<h2 id="规则1-理解系统"><a href="#规则1-理解系统" class="headerlink" title="规则1 理解系统"></a>规则1 理解系统</h2><p>通过阅读手册或者其它方式理解系统，能使我们避免很多低级的错误，并能对一些问题有一定的处理方式，以及帮助我们能更好的使用系统。<br>此规则又分为以下几个要点:</p>
+<ul>
+<li>阅读手册</li>
+<li>仔细阅读每个细节</li>
+<li>掌握基础知识</li>
+<li>了解工作流程</li>
+<li>了解工具</li>
+<li>查阅细节</li>
+</ul>
+<h2 id="规则2-制造失败"><a href="#规则2-制造失败" class="headerlink" title="规则2 制造失败"></a>规则2 制造失败</h2><blockquote>
 <p>“什么也比不上直接去的的证据来得重要。”————福尔摩斯，《血色的研究》</p>
 </blockquote>
-<pre><code>制造失败，能使我们观察错误，并专心的排查失败的原因，以及作为是否修复问题的依据。
-此规则又分为以下几个要点:
-·制造失败
-·从头开始
-·引发失败
-·不模拟失败
-·查找不受控制的条件
-·仔细观察失败
-·不过于相信统计数据
-·不怀疑BUG发生的触发点
-·保存好已经使用的调试工具
-</code></pre><h2 id="规则3-不要想，而要看"><a href="#规则3-不要想，而要看" class="headerlink" title="规则3 不要想，而要看"></a>规则3 不要想，而要看</h2><blockquote>
+<p>制造失败，能使我们观察错误，并专心的排查失败的原因，以及作为是否修复问题的依据。<br>此规则又分为以下几个要点:</p>
+<ul>
+<li>制造失败</li>
+<li>从头开始</li>
+<li>引发失败</li>
+<li>不模拟失败</li>
+<li>查找不受控制的条件</li>
+<li>仔细观察失败</li>
+<li>不过于相信统计数据</li>
+<li>不怀疑BUG发生的触发点</li>
+<li>保存好已经使用的调试工具</li>
+</ul>
+<h2 id="规则3-不要想，而要看"><a href="#规则3-不要想，而要看" class="headerlink" title="规则3 不要想，而要看"></a>规则3 不要想，而要看</h2><blockquote>
 <p>亲眼看到底层的失败是非常重要的。如果你猜测失败是如何发生的，那常常会修复一些根不是BUG的问题。这样的修复不仅不会解决问题，而且还会浪费时间和金钱，甚至会破坏其他地方。请记住，不要这样做。————选自本书</p>
 </blockquote>
-<pre><code>此规则又分为以下几个要点:
-·观察失败
-·查看细节
-·对系统进行插装
-·注意汉森堡不准原则
-·勇于猜想，丹猜想只是为了确定搜索的重要目标
-</code></pre><h2 id="规则4-分而治之"><a href="#规则4-分而治之" class="headerlink" title="规则4 分而治之"></a>规则4 分而治之</h2><pre><code>把问题分割处理，有力于快速定位失败产生的原因，节约时间。有序序列的二分法和顺序查找的效率对比。
-此规则又分为以下几个要点:
-·确定问题的查找范围
-·逐步缩小搜索范围
-·确定搜索范围内问题区域
-·使用易于查看的测试模式
-·从有问题的一端开始搜索
-·修复已经发现的BUG
-·首先消除特定类型的BUG
-</code></pre><h2 id="规则5-一次只改一个地方"><a href="#规则5-一次只改一个地方" class="headerlink" title="规则5 一次只改一个地方"></a>规则5 一次只改一个地方</h2><pre><code>每次修改，只应修复和此次失败相关的部分。对于有代码重构症的人要忍住自己双手去修改BUG，完全遵守此规则很难，不过也有失之东隅收之桑榆。
-此规则又分为以下几个要点:
-·隔离关键因素
-·明确问题点前不急于修改系统
-·一次只改一个测试
-·对比正常系统
-·记录所作修改的问题点
-</code></pre><h2 id="规则6-保持审计跟踪"><a href="#规则6-保持审计跟踪" class="headerlink" title="规则6 保持审计跟踪"></a>规则6 保持审计跟踪</h2><pre><code>对每次测试的条件和结果做记录和分类，有时会起到意想不到的效果。
-此规则又分为以下几个要点:
-·记录测试操作的流程、结果
-·关注细节
-·事件记录关联到一起
-·利用设计的审计跟踪
-·把事情记录下来
-</code></pre><h2 id="规则7-检查插头"><a href="#规则7-检查插头" class="headerlink" title="规则7 检查插头"></a>规则7 检查插头</h2><blockquote>
+<p>此规则又分为以下几个要点:</p>
+<ul>
+<li>观察失败</li>
+<li>查看细节</li>
+<li>对系统进行插装</li>
+<li>注意汉森堡不准原则</li>
+<li>勇于猜想，丹猜想只是为了确定搜索的重要目标</li>
+</ul>
+<h2 id="规则4-分而治之"><a href="#规则4-分而治之" class="headerlink" title="规则4 分而治之"></a>规则4 分而治之</h2><p>把问题分割处理，有力于快速定位失败产生的原因，节约时间。有序序列的二分法和顺序查找的效率对比。<br>此规则又分为以下几个要点:</p>
+<ul>
+<li>确定问题的查找范围</li>
+<li>逐步缩小搜索范围</li>
+<li>确定搜索范围内问题区域</li>
+<li>使用易于查看的测试模式</li>
+<li>从有问题的一端开始搜索</li>
+<li>修复已经发现的BUG</li>
+<li>首先消除特定类型的BUG</li>
+</ul>
+<h2 id="规则5-一次只改一个地方"><a href="#规则5-一次只改一个地方" class="headerlink" title="规则5 一次只改一个地方"></a>规则5 一次只改一个地方</h2><p>每次修改，只应修复和此次失败相关的部分。对于有代码重构症的人要忍住自己双手去修改BUG，完全遵守此规则很难，不过也有失之东隅收之桑榆。<br>此规则又分为以下几个要点:</p>
+<ul>
+<li>隔离关键因素</li>
+<li>明确问题点前不急于修改系统</li>
+<li>一次只改一个测试</li>
+<li>对比正常系统</li>
+<li>记录所作修改的问题点</li>
+</ul>
+<h2 id="规则6-保持审计跟踪"><a href="#规则6-保持审计跟踪" class="headerlink" title="规则6 保持审计跟踪"></a>规则6 保持审计跟踪</h2><p>对每次测试的条件和结果做记录和分类，有时会起到意想不到的效果。<br>此规则又分为以下几个要点:</p>
+<ul>
+<li>记录测试操作的流程、结果</li>
+<li>关注细节</li>
+<li>事件记录关联到一起</li>
+<li>利用设计的审计跟踪</li>
+<li>把事情记录下来</li>
+</ul>
+<h2 id="规则7-检查插头"><a href="#规则7-检查插头" class="headerlink" title="规则7 检查插头"></a>规则7 检查插头</h2><blockquote>
 <p>“没有什么比一个显而易见的事实更能迷惑人了。”————福尔摩斯，《博斯科姆比溪谷秘案》</p>
 </blockquote>
-<pre><code>显而易见的错误，往往灯下黑。
-此规则又分为以下几个要点:
-·质疑自己的假设
-·从头开始检查
-·对工具进行测试
-</code></pre><h2 id="规则8-获得全新观点"><a href="#规则8-获得全新观点" class="headerlink" title="规则8 获得全新观点"></a>规则8 获得全新观点</h2><pre><code>一人计短两人技长，我们可以从其他人那边获取新的观点。
-此规则又分为以下几个要点:
-·帮助无处不在
-·放下面子
-·主动征求别人的意见
-·报告症状，不要夹杂自己主观观点
-·不缺的的判断，可以作为补充
-</code></pre><h2 id="规则9-如果不修复BUG，它将依然存在"><a href="#规则9-如果不修复BUG，它将依然存在" class="headerlink" title="规则9 如果不修复BUG，它将依然存在"></a>规则9 如果不修复BUG，它将依然存在</h2><pre><code>我们的目标是解决BUG，而不是掩盖BUG。不明确BUG产生的原因，巧合的方式BUG被掩盖，BUG依然存在，会被再次触发。
-此规则又分为以下几个要点:
-·检查问题是够被修复
-·查证自己的修改
-·明确BUG从来不会自己消失
-·从根本上解决问题
-·对过程进行修复
-</code></pre>
+<p>显而易见的错误，往往灯下黑。<br>此规则又分为以下几个要点:</p>
+<ul>
+<li>质疑自己的假设</li>
+<li>从头开始检查</li>
+<li>对工具进行测试</li>
+</ul>
+<h2 id="规则8-获得全新观点"><a href="#规则8-获得全新观点" class="headerlink" title="规则8 获得全新观点"></a>规则8 获得全新观点</h2><p>一人计短两人技长，我们可以从其他人那边获取新的观点。<br>此规则又分为以下几个要点:</p>
+<ul>
+<li>帮助无处不在</li>
+<li>放下面子</li>
+<li>主动征求别人的意见</li>
+<li>报告症状，不要夹杂自己主观观点</li>
+<li>不缺的的判断，可以作为补充</li>
+</ul>
+<h2 id="规则9-如果不修复BUG，它将依然存在"><a href="#规则9-如果不修复BUG，它将依然存在" class="headerlink" title="规则9 如果不修复BUG，它将依然存在"></a>规则9 如果不修复BUG，它将依然存在</h2><p>我们的目标是解决BUG，而不是掩盖BUG。不明确BUG产生的原因，巧合的方式BUG被掩盖，BUG依然存在，会被再次触发。<br>此规则又分为以下几个要点:</p>
+<ul>
+<li>检查问题是够被修复</li>
+<li>查证自己的修改</li>
+<li>明确BUG从来不会自己消失</li>
+<li>从根本上解决问题</li>
+<li>对过程进行修复</li>
+</ul>
+
       
     </div>
     <footer class="article-footer">
@@ -454,18 +386,10 @@ eg:
     
     <div class="article-entry" itemprop="articleBody">
       
-        <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><pre><code>近阶段的理想学习规划——千里之行，屎于足下
-</code></pre><h2 id="计划"><a href="#计划" class="headerlink" title="计划"></a>计划</h2><pre><code>1.读书 调试九法-软硬件错误排查之道 时间：7~9天
-2.学习 ES标准内async/await,并能熟练应用到开发环境内 时间：3~5天
-3.读书 TCP/IP网络编程 时间：15~20天
-4.读书 操作系统――精髓与设计原理 时间：22~30天
-5.读书 数据结构 时间：22~30天 （书籍加一些补充资料）
-6.学习 Koa/Express...任意一种前端框架 时间：一个月左右 暂时无法估量
-7.学习 掌握css一些基本语法 时间：7~10天
-</code></pre><h2 id="目前状态"><a href="#目前状态" class="headerlink" title="目前状态"></a>目前状态</h2><h3 id="调试九法-软硬件错误排查之道"><a href="#调试九法-软硬件错误排查之道" class="headerlink" title="调试九法-软硬件错误排查之道"></a>调试九法-软硬件错误排查之道</h3><pre><code>2018.5.29 1-13页
-2018.5.30 14-27页
-2018.5.31 28-41页
-</code></pre>
+        <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>近阶段的理想学习规划——千里之行，屎于足下</p>
+<h2 id="计划"><a href="#计划" class="headerlink" title="计划"></a>计划</h2><p>1.读书 调试九法-软硬件错误排查之道 时间：7~9天<br>2.学习 ES标准内async/await,并能熟练应用到开发环境内 时间：3~5天<br>3.读书 TCP/IP网络编程 时间：15~20天<br>4.读书 操作系统――精髓与设计原理 时间：22~30天<br>5.读书 数据结构 时间：22~30天 （书籍加一些补充资料）<br>6.学习 Koa/Express…任意一种前端框架 时间：一个月左右 暂时无法估量<br>7.学习 掌握css一些基本语法 时间：7~10天</p>
+<h2 id="目前状态"><a href="#目前状态" class="headerlink" title="目前状态"></a>目前状态</h2><h3 id="调试九法-软硬件错误排查之道"><a href="#调试九法-软硬件错误排查之道" class="headerlink" title="调试九法-软硬件错误排查之道"></a>调试九法-软硬件错误排查之道</h3><p>2018.5.29 1-13页<br>2018.5.30 14-27页<br>2018.5.31 28-41页</p>
+
       
     </div>
     <footer class="article-footer">
@@ -501,16 +425,23 @@ eg:
     
     <div class="article-entry" itemprop="articleBody">
       
-        <h1 id="摘要"><a href="#摘要" class="headerlink" title="摘要"></a>摘要</h1><pre><code>记录读过的书，和即将读的书
-</code></pre><h2 id="今年已读"><a href="#今年已读" class="headerlink" title="今年已读"></a>今年已读</h2><pre><code>深入浅出的NodeJS 朴灵 经典必读
-ES6 标准入门(第三版) 阮一峰 入门必读
-NodeJS实战 T.J 过时不推荐
-软件开发者路线图：从学徒到高手 经典必读-尤其刚入行
-</code></pre><h2 id="书架未读"><a href="#书架未读" class="headerlink" title="书架未读"></a>书架未读</h2><pre><code>操作系统――精髓与设计原理
-数据结构 严蔚敏
-TCP/IP网络编程 尹圣雨
-</code></pre><h2 id="目前在读"><a href="#目前在读" class="headerlink" title="目前在读"></a>目前在读</h2><pre><code>调试九法-软硬件错误排查之道 David J.Agans
-</code></pre>
+        <h1 id="摘要"><a href="#摘要" class="headerlink" title="摘要"></a>摘要</h1><p>记录读过的书，和即将读的书</p>
+<h2 id="今年已读"><a href="#今年已读" class="headerlink" title="今年已读"></a>今年已读</h2><ul>
+<li>深入浅出的NodeJS 朴灵 经典必读</li>
+<li>ES6 标准入门(第三版) 阮一峰 入门必读</li>
+<li>NodeJS实战 T.J 过时不推荐</li>
+<li>软件开发者路线图：从学徒到高手 经典必读-尤其刚入行</li>
+<li>调试九法-软硬件错误排查之道 David J.Agans 经典必读-尤其刚入行</li>
+<li>TCP/IP网络教程 尹圣雨 入门书籍，基础书籍</li>
+</ul>
+<h2 id="书架未读"><a href="#书架未读" class="headerlink" title="书架未读"></a>书架未读</h2><ul>
+<li>数据结构 严蔚敏</li>
+<li>TCP/IP网络编程 尹圣雨</li>
+</ul>
+<h2 id="目前在读"><a href="#目前在读" class="headerlink" title="目前在读"></a>目前在读</h2><ul>
+<li>操作系统――精髓与设计原理</li>
+</ul>
+
       
     </div>
     <footer class="article-footer">
@@ -546,41 +477,41 @@ TCP/IP网络编程 尹圣雨
     
     <div class="article-entry" itemprop="articleBody">
       
-        <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><pre><code>程序员，作为一个比较自律的技术工种，我是抱着怀疑的态度拿起了这本书——软件开发者都应读的书。工作之余，6天时间此书扫描一遍，此书还是干货不少的。
-此书并不是一个工具书，按我之前的吐槽就是一行代码就没有，描述了很多模式——不是代码设计的模式，对于初入软件行业、以及从业多年的人都有独到的方式给予建议。
-此书以工艺的角度把软件从业者分成学徒、熟练工、师傅三个阶段，并着重介绍了作为一位积极向上(财富/技术)的软件学徒阶段各种模式。
-神奇的是，最终阐述现在我们不应该期望已经有了师傅级的软件工匠。
-</code></pre><h2 id="空杯心态"><a href="#空杯心态" class="headerlink" title="空杯心态"></a>空杯心态</h2><pre><code>以大师和一个年轻的哲学家的故事阐明学徒期间的态度，不自满，拥抱与众不同的奇异想法，自己才能吸取更多。
-空杯是把杯子做大，并持之以恒的填充各种含有H20的液体。
-</code></pre><h3 id="白色腰带"><a href="#白色腰带" class="headerlink" title="白色腰带"></a>白色腰带</h3><pre><code>勇于放下技术包袱，系上白色腰带，努力学习学的知识。
-</code></pre><h3 id="暴露无知"><a href="#暴露无知" class="headerlink" title="暴露无知"></a>暴露无知</h3><pre><code>每个人都有自己的擅长的领域，暴露无知并正视无知，可以让团队更加有效率的运行，同时来自团队的压力更能让你加速学习此技术的动力。
-</code></pre><h3 id="以退为进"><a href="#以退为进" class="headerlink" title="以退为进"></a>以退为进</h3><blockquote>
+        <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>程序员，作为一个比较自律的技术工种，我是抱着怀疑的态度拿起了这本书——软件开发者都应读的书。工作之余，6天时间此书扫描一遍，此书还是干货不少的。<br>此书并不是一个工具书，按我之前的吐槽就是一行代码就没有，描述了很多模式——不是代码设计的模式，对于初入软件行业、以及从业多年的人都有独到的方式给予建议。<br>此书以工艺的角度把软件从业者分成学徒、熟练工、师傅三个阶段，并着重介绍了作为一位积极向上(财富/技术)的软件学徒阶段各种模式。<br>神奇的是，最终阐述现在我们不应该期望已经有了师傅级的软件工匠。</p>
+<h2 id="空杯心态"><a href="#空杯心态" class="headerlink" title="空杯心态"></a>空杯心态</h2><p>以大师和一个年轻的哲学家的故事阐明学徒期间的态度，不自满，拥抱与众不同的奇异想法，自己才能吸取更多。<br>空杯是把杯子做大，并持之以恒的填充各种含有H20的液体。</p>
+<h3 id="白色腰带"><a href="#白色腰带" class="headerlink" title="白色腰带"></a>白色腰带</h3><p>勇于放下技术包袱，系上白色腰带，努力学习学的知识。</p>
+<h3 id="暴露无知"><a href="#暴露无知" class="headerlink" title="暴露无知"></a>暴露无知</h3><p>每个人都有自己的擅长的领域，暴露无知并正视无知，可以让团队更加有效率的运行，同时来自团队的压力更能让你加速学习此技术的动力。</p>
+<h3 id="以退为进"><a href="#以退为进" class="headerlink" title="以退为进"></a>以退为进</h3><blockquote>
 <p>“众里寻他千百度，蓦然回首，那人却在灯火阑珊处。”眼着你蓦然回首时发现的模式向前推进，有时你就能想出新的东西了。 ——Robert Pirsig 《Zen and the Art if Motorcycle Maintenance》</p>
 </blockquote>
-<pre><code>没有相对应的技术储备，贸然迎难而上，头铁并不是一个好的选择，退到一个安全暴露无知、向同道中人寻求指导会大幅度的规避危险。
-</code></pre><h2 id="走过漫漫长路"><a href="#走过漫漫长路" class="headerlink" title="走过漫漫长路"></a>走过漫漫长路</h2><blockquote>
+<p>没有相对应的技术储备，贸然迎难而上，头铁并不是一个好的选择，退到一个安全暴露无知、向同道中人寻求指导会大幅度的规避危险。</p>
+<h2 id="走过漫漫长路"><a href="#走过漫漫长路" class="headerlink" title="走过漫漫长路"></a>走过漫漫长路</h2><blockquote>
 <p>要在编程方面真正擅长需要医生的努力，还有不断学习实践的进取心。——Ron Jeffries等，《Extreme Programming Installed》</p>
 </blockquote>
-<pre><code>长路漫漫，如何坚持也许你能在这里找到答案
-</code></pre><h3 id="坚守阵地"><a href="#坚守阵地" class="headerlink" title="坚守阵地"></a>坚守阵地</h3><pre><code>相对于管理，有些人更愿意在技术岗位了释放激情。
-</code></pre><h2 id="准确的自我评估"><a href="#准确的自我评估" class="headerlink" title="准确的自我评估"></a>准确的自我评估</h2><pre><code>不要因为超过周围圈子的平均水平或者达到顶级水平，不要放弃释放激情。
-采用只求最差在团队中不断打磨自己的技术；
-达者可为师，找人指导来加速自己的成长；
-同道中人、密切交往来人互通技术
-</code></pre><h2 id="恒久学习"><a href="#恒久学习" class="headerlink" title="恒久学习"></a>恒久学习</h2><blockquote>
+<p>长路漫漫，如何坚持也许你能在这里找到答案</p>
+<h3 id="坚守阵地"><a href="#坚守阵地" class="headerlink" title="坚守阵地"></a>坚守阵地</h3><p>相对于管理，有些人更愿意在技术岗位了释放激情。</p>
+<h2 id="准确的自我评估"><a href="#准确的自我评估" class="headerlink" title="准确的自我评估"></a>准确的自我评估</h2><ul>
+<li>不要因为超过周围圈子的平均水平或者达到顶级水平，不要放弃释放激情。</li>
+<li>采用只求最差在团队中不断打磨自己的技术；</li>
+<li>达者可为师，找人指导来加速自己的成长；</li>
+<li>同道中人、密切交往来人互通技术</li>
+</ul>
+<h2 id="恒久学习"><a href="#恒久学习" class="headerlink" title="恒久学习"></a>恒久学习</h2><blockquote>
 <p>如果我们放纵自己，我们将总是需要等待一些消遣或其他事情结束才能安心工作。只有那些对知识非常苛求，以至于在不利的环境下扔你能坚持探索的人才能取得更大的成就，从来就没有什么“有利条件”。——C.S.Lewis, “Learning in War-Time”，”The Weight of Glory”</p>
 </blockquote>
-<pre><code>技术工种不断学习是基本的要求
-</code></pre><h3 id="分享所学"><a href="#分享所学" class="headerlink" title="分享所学"></a>分享所学</h3><pre><code>分享不会让你知识减少，会加速开发想法的交流，能够发现自己知识的漏洞，锤炼自己的技术以及刷新自己的技术评价。
-</code></pre><h3 id="建立馈路"><a href="#建立馈路" class="headerlink" title="建立馈路"></a>建立馈路</h3><pre><code>客观高效的反馈，得到设计产品的质量，能够分析自身的能力。
-</code></pre><h2 id="安排你的课程"><a href="#安排你的课程" class="headerlink" title="安排你的课程"></a>安排你的课程</h2><pre><code>合理的安排课程，我们才能更高效的学习
-</code></pre><h3 id="阅读列表"><a href="#阅读列表" class="headerlink" title="阅读列表"></a>阅读列表</h3><pre><code>阅读列表能帮助我们查看自己学过什么，并对自己技术分类，对下一步安排有参考。分享他、查看别人的分享能够给予所有处于迷茫期的人帮助。
-</code></pre><h3 id="坚持阅读"><a href="#坚持阅读" class="headerlink" title="坚持阅读"></a>坚持阅读</h3><pre><code>不积跬步无以至千里
-一本整体概念阐述的书籍远比几个技术摘要重要。
-</code></pre><h3 id="钻研名著"><a href="#钻研名著" class="headerlink" title="钻研名著"></a>钻研名著</h3><pre><code>只读读最优质的书，经典永不过时
-</code></pre><h3 id="深入挖掘"><a href="#深入挖掘" class="headerlink" title="深入挖掘"></a>深入挖掘</h3><pre><code>深入挖掘了解原理，才能更加高效的开发，以及和靠巧合编程的人区分开来。
-</code></pre><h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><pre><code>一篇博客下来，作为沉默寡言的程序员，原来自己文字表达能力更废。
-</code></pre>
+<p>技术工种不断学习是基本的要求</p>
+<h3 id="分享所学"><a href="#分享所学" class="headerlink" title="分享所学"></a>分享所学</h3><p>分享不会让你知识减少，会加速开发想法的交流，能够发现自己知识的漏洞，锤炼自己的技术以及刷新自己的技术评价。</p>
+<h3 id="建立馈路"><a href="#建立馈路" class="headerlink" title="建立馈路"></a>建立馈路</h3><p>客观高效的反馈，得到设计产品的质量，能够分析自身的能力。</p>
+<h2 id="安排你的课程"><a href="#安排你的课程" class="headerlink" title="安排你的课程"></a>安排你的课程</h2><p>合理的安排课程，我们才能更高效的学习</p>
+<h3 id="阅读列表"><a href="#阅读列表" class="headerlink" title="阅读列表"></a>阅读列表</h3><p>阅读列表能帮助我们查看自己学过什么，并对自己技术分类，对下一步安排有参考。分享他、查看别人的分享能够给予所有处于迷茫期的人帮助。</p>
+<h3 id="坚持阅读"><a href="#坚持阅读" class="headerlink" title="坚持阅读"></a>坚持阅读</h3><ul>
+<li>不积跬步无以至千里</li>
+<li>一本整体概念阐述的书籍远比几个技术摘要重要。</li>
+</ul>
+<h3 id="钻研名著"><a href="#钻研名著" class="headerlink" title="钻研名著"></a>钻研名著</h3><p>只读读最优质的书，经典永不过时</p>
+<h3 id="深入挖掘"><a href="#深入挖掘" class="headerlink" title="深入挖掘"></a>深入挖掘</h3><p>深入挖掘了解原理，才能更加高效的开发，以及和靠巧合编程的人区分开来。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>一篇博客下来，作为沉默寡言的程序员，原来自己文字表达能力更废。</p>
+
       
     </div>
     <footer class="article-footer">

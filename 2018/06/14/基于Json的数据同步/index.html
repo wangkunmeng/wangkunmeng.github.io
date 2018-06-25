@@ -7,17 +7,17 @@
   
   <title>基于Json的数据同步 | wangkm&#39;s blog</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="前言游戏服务器与客户端的数据同步，各家有各家的秘籍。下面我就分享一下http服务器和客户端基于JSON文件的数据同步的思路。 何时同步http短连接，就是每次返回客户端消息时，包同步数据带回去。同步数据放到消息返回前。 Json文件制作和格式剖析card.json {     TagName: card //此为json标识，前后端解析识别     keys: [ //keys为Json具体数据键">
+  <meta name="description" content="前言游戏服务器与客户端的数据同步，各家有各家的秘籍。下面我就分享一下http服务器和客户端基于JSON文件的数据同步的思路。 何时同步http短连接，就是每次返回客户端消息时，包同步数据带回去。同步数据放到消息返回前。 Json文件制作和格式剖析123456789101112131415161718192021222324252627282930card.json&amp;#123;    TagName">
 <meta property="og:type" content="article">
 <meta property="og:title" content="基于Json的数据同步">
 <meta property="og:url" content="http://yoursite.com/2018/06/14/基于Json的数据同步/index.html">
 <meta property="og:site_name" content="wangkm&#39;s blog">
-<meta property="og:description" content="前言游戏服务器与客户端的数据同步，各家有各家的秘籍。下面我就分享一下http服务器和客户端基于JSON文件的数据同步的思路。 何时同步http短连接，就是每次返回客户端消息时，包同步数据带回去。同步数据放到消息返回前。 Json文件制作和格式剖析card.json {     TagName: card //此为json标识，前后端解析识别     keys: [ //keys为Json具体数据键">
+<meta property="og:description" content="前言游戏服务器与客户端的数据同步，各家有各家的秘籍。下面我就分享一下http服务器和客户端基于JSON文件的数据同步的思路。 何时同步http短连接，就是每次返回客户端消息时，包同步数据带回去。同步数据放到消息返回前。 Json文件制作和格式剖析123456789101112131415161718192021222324252627282930card.json&amp;#123;    TagName">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2018-06-14T02:23:28.707Z">
+<meta property="og:updated_time" content="2018-06-25T06:03:14.136Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="基于Json的数据同步">
-<meta name="twitter:description" content="前言游戏服务器与客户端的数据同步，各家有各家的秘籍。下面我就分享一下http服务器和客户端基于JSON文件的数据同步的思路。 何时同步http短连接，就是每次返回客户端消息时，包同步数据带回去。同步数据放到消息返回前。 Json文件制作和格式剖析card.json {     TagName: card //此为json标识，前后端解析识别     keys: [ //keys为Json具体数据键">
+<meta name="twitter:description" content="前言游戏服务器与客户端的数据同步，各家有各家的秘籍。下面我就分享一下http服务器和客户端基于JSON文件的数据同步的思路。 何时同步http短连接，就是每次返回客户端消息时，包同步数据带回去。同步数据放到消息返回前。 Json文件制作和格式剖析123456789101112131415161718192021222324252627282930card.json&amp;#123;    TagName">
   
     <link rel="alternate" href="/atom.xml" title="wangkm&#39;s blog" type="application/atom+xml">
   
@@ -86,98 +86,21 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><pre><code>游戏服务器与客户端的数据同步，各家有各家的秘籍。下面我就分享一下http服务器和客户端基于JSON文件的数据同步的思路。
-</code></pre><h2 id="何时同步"><a href="#何时同步" class="headerlink" title="何时同步"></a>何时同步</h2><pre><code>http短连接，就是每次返回客户端消息时，包同步数据带回去。同步数据放到消息返回前。
-</code></pre><h2 id="Json文件制作和格式剖析"><a href="#Json文件制作和格式剖析" class="headerlink" title="Json文件制作和格式剖析"></a>Json文件制作和格式剖析</h2><pre><code>card.json
-{
-    TagName: card //此为json标识，前后端解析识别
-    keys: [ //keys为Json具体数据键值
-        {
-            keyName: &apos;GUID&apos;,
-            comment: &apos;唯一ID&apos;, //同步数据时用户标识此OBj，全局唯一
-            type: &apos;String&apos;,
-            value: &apos;&apos;
-        },
-        {
-            keyName: &apos;uid&apos;, 
-            comment: &apos;玩家UID&apos;, //基本说明，利于维护
-            type: &apos;Number&apos;, //数据类型，可做基本校验
-            value: 10000, //初始数据默认值,
-        },
-        {
-            keyName: &apos;level&apos;,
-            comment: &apos;等级&apos;,
-            type: &apos;Number&apos;,
-            value: 0
-        },
-        {
-            keyName: &apos;ctSkin&apos;,
-            comment: &apos;皮肤&apos;,
-            type: &apos;Array&apos;,
-            value: []
-        }
-    ]
-}
-</code></pre><h2 id="Json文件设计对应Obj格式"><a href="#Json文件设计对应Obj格式" class="headerlink" title="Json文件设计对应Obj格式"></a>Json文件设计对应Obj格式</h2><pre><code>简单描述下，JSON文件对应的Obj对象怎么设计
-{
-    tagName: card, //obj对应JSON文件名字
-    keyIndex: { //同步时需要记录变更的数据位置，比直接传keyName要好
-        GUID:0,
-        uid：1,
-        level: 2,
-        ctSkin: 3,
-    },
-    keyValue: [&apos;10001@10000&apos;, 10000,  5, []] //本地保存，此OBj所有数据
-    changeKeys: [2] //变更了那些Key
-    function syncChangeToClient () {
-        //简单的算法对应完毕
-        [变更的JSON原型对应怎么解析，[[变更的位置，变更后数据格式]，[变更的位置，变更后数据格式]]，全局索引GUID（用来和多个卡牌做区分）]
-        //卡牌&apos;10001@10000&apos;索引的对象，数据1位置变更为10
-        return [&apos;card&apos;, [[1, 10]], &apos;10001@10000&apos;],
-    }
-    function syncToClient () {
-        //简单的算法对应完毕
-        [JSON原型名字，[当前所有数据]]
-        return [&apos;card&apos;, [&apos;10001@10000&apos;, 10000,  5, []]],
-    }
-}
-</code></pre><h2 id="同步的类型"><a href="#同步的类型" class="headerlink" title="同步的类型"></a>同步的类型</h2><pre><code>同步需要只要需要3个数据表示出，增加[1]、删除[2]、更新[3]
-</code></pre><h3 id="增加"><a href="#增加" class="headerlink" title="增加"></a>增加</h3><pre><code>这种增加，一般都是把新生成Obj全部同步给客户端。
-eg:
-{
-    1:[ //数组，为了支持一次同步所有增加、删除、更新
-        obj.syncToClient();//每一个增加的对象
-        obj.syncToClient();//每一个增加的对象
-        ...
-    ]
-}
-</code></pre><h3 id="删除"><a href="#删除" class="headerlink" title="删除"></a>删除</h3><pre><code>删除Obj一般只需要提供tagName外加GUID即可
-eg:
-{
-    2:[ //数组，为了支持一次同步所有增加、删除、更新
-        [
-           card，&apos;10001@10000&apos;
-        ],
-        ...
-    ]
-}
-</code></pre><h3 id="更新"><a href="#更新" class="headerlink" title="更新"></a>更新</h3><pre><code>更新需要提供tagName,GUID,以及每个更新的Key索引和最后的值
-eg:
-{
-    3:[ //数组，为了支持一次同步所有增加、删除、更新
-        obj.syncChangeToClient();//每一个更新的对象
-        obj.syncChangeToClient();//每一个更新的对象
-    ]
-}
-</code></pre><h2 id="同步的基础规则"><a href="#同步的基础规则" class="headerlink" title="同步的基础规则"></a>同步的基础规则</h2><pre><code>1.更新后删除的,数据不同步更新的字段，只同步删除
-2.单个Obj多次更新的，每个Key只同步最后值，一次同步完毕
-3.增加后更新的，只同步增加全部属性
-4.增加后删除的，不同步数据
-5.删除又增加的，理论不出现，但要同步增加的数据
-6.增加、同步、删除各个key内有数据才有，比如只有增加同步只需key1就行,都有的话，就是{1：[]，2：[]，3：[]}
-7.每次同步完毕都要清除本书数据变更状态
-</code></pre><h1 id="结束语"><a href="#结束语" class="headerlink" title="结束语"></a>结束语</h1><pre><code>思路还是比较乱，设计还是不是很成熟。终究是没有实际代码去验证，自己也很遗憾，等后续有成品东西出来，再接着验证去分享。
-</code></pre>
+        <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>游戏服务器与客户端的数据同步，各家有各家的秘籍。下面我就分享一下http服务器和客户端基于JSON文件的数据同步的思路。</p>
+<h2 id="何时同步"><a href="#何时同步" class="headerlink" title="何时同步"></a>何时同步</h2><p>http短连接，就是每次返回客户端消息时，包同步数据带回去。同步数据放到消息返回前。</p>
+<h2 id="Json文件制作和格式剖析"><a href="#Json文件制作和格式剖析" class="headerlink" title="Json文件制作和格式剖析"></a>Json文件制作和格式剖析</h2><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">card.json</span><br><span class="line">&#123;</span><br><span class="line">    TagName: card //此为json标识，前后端解析识别</span><br><span class="line">    keys: [ //keys为Json具体数据键值</span><br><span class="line">        &#123;</span><br><span class="line">            keyName: 'GUID',</span><br><span class="line">            comment: '唯一ID', //同步数据时用户标识此OBj，全局唯一</span><br><span class="line">            type: 'String',</span><br><span class="line">            value: ''</span><br><span class="line">        &#125;,</span><br><span class="line">        &#123;</span><br><span class="line">            keyName: 'uid', </span><br><span class="line">            comment: '玩家UID', //基本说明，利于维护</span><br><span class="line">            type: 'Number', //数据类型，可做基本校验</span><br><span class="line">            value: 10000, //初始数据默认值,</span><br><span class="line">        &#125;,</span><br><span class="line">        &#123;</span><br><span class="line">            keyName: 'level',</span><br><span class="line">            comment: '等级',</span><br><span class="line">            type: 'Number',</span><br><span class="line">            value: 0</span><br><span class="line">        &#125;,</span><br><span class="line">        &#123;</span><br><span class="line">            keyName: 'ctSkin',</span><br><span class="line">            comment: '皮肤',</span><br><span class="line">            type: 'Array',</span><br><span class="line">            value: []</span><br><span class="line">        &#125;</span><br><span class="line">    ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="Json文件设计对应Obj格式"><a href="#Json文件设计对应Obj格式" class="headerlink" title="Json文件设计对应Obj格式"></a>Json文件设计对应Obj格式</h2><p>简单描述下，JSON文件对应的Obj对象怎么设计</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    tagName: card, <span class="comment">//obj对应JSON文件名字</span></span><br><span class="line">    keyIndex: &#123; <span class="comment">//同步时需要记录变更的数据位置，比直接传keyName要好</span></span><br><span class="line">        GUID:<span class="number">0</span>,</span><br><span class="line">        uid：<span class="number">1</span>,</span><br><span class="line">        level: <span class="number">2</span>,</span><br><span class="line">        ctSkin: <span class="number">3</span>,</span><br><span class="line">    &#125;,</span><br><span class="line">    keyValue: [<span class="string">'10001@10000'</span>, <span class="number">10000</span>,  <span class="number">5</span>, []] <span class="comment">//本地保存，此OBj所有数据</span></span><br><span class="line">    changeKeys: [<span class="number">2</span>] <span class="comment">//变更了那些Key</span></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">syncChangeToClient</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="comment">//简单的算法对应完毕</span></span><br><span class="line">        [变更的<span class="built_in">JSON</span>原型对应怎么解析，[[变更的位置，变更后数据格式]，[变更的位置，变更后数据格式]]，全局索引GUID（用来和多个卡牌做区分）]</span><br><span class="line">        <span class="comment">//卡牌'10001@10000'索引的对象，数据1位置变更为10</span></span><br><span class="line">        <span class="keyword">return</span> [<span class="string">'card'</span>, [[<span class="number">1</span>, <span class="number">10</span>]], <span class="string">'10001@10000'</span>],</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">syncToClient</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="comment">//简单的算法对应完毕</span></span><br><span class="line">        [<span class="built_in">JSON</span>原型名字，[当前所有数据]]</span><br><span class="line">        <span class="keyword">return</span> [<span class="string">'card'</span>, [<span class="string">'10001@10000'</span>, <span class="number">10000</span>,  <span class="number">5</span>, []]],</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="同步的类型"><a href="#同步的类型" class="headerlink" title="同步的类型"></a>同步的类型</h2><p>同步需要只要需要3个数据表示出，增加[1]、删除[2]、更新[3]</p>
+<h3 id="增加"><a href="#增加" class="headerlink" title="增加"></a>增加</h3><p>这种增加，一般都是把新生成Obj全部同步给客户端。<br>eg:</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="number">1</span>:[ <span class="comment">//数组，为了支持一次同步所有增加、删除、更新</span></span><br><span class="line">        obj.syncToClient();<span class="comment">//每一个增加的对象</span></span><br><span class="line">        obj.syncToClient();<span class="comment">//每一个增加的对象</span></span><br><span class="line">        ...</span><br><span class="line">    ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="删除"><a href="#删除" class="headerlink" title="删除"></a>删除</h3><p>删除Obj一般只需要提供tagName外加GUID即可<br>eg:</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="number">2</span>:[ <span class="comment">//数组，为了支持一次同步所有增加、删除、更新</span></span><br><span class="line">        [</span><br><span class="line">            card，<span class="string">'10001@10000'</span></span><br><span class="line">        ],</span><br><span class="line">        ...</span><br><span class="line">    ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="更新"><a href="#更新" class="headerlink" title="更新"></a>更新</h3><p>更新需要提供tagName,GUID,以及每个更新的Key索引和最后的值<br>eg:</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="number">3</span>:[ <span class="comment">//数组，为了支持一次同步所有增加、删除、更新</span></span><br><span class="line">        obj.syncChangeToClient();<span class="comment">//每一个更新的对象</span></span><br><span class="line">        obj.syncChangeToClient();<span class="comment">//每一个更新的对象</span></span><br><span class="line">    ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="同步的基础规则"><a href="#同步的基础规则" class="headerlink" title="同步的基础规则"></a>同步的基础规则</h2><p>1.更新后删除的,数据不同步更新的字段，只同步删除<br>2.单个Obj多次更新的，每个Key只同步最后值，一次同步完毕<br>3.增加后更新的，只同步增加全部属性<br>4.增加后删除的，不同步数据<br>5.删除又增加的，理论不出现，但要同步增加的数据<br>6.增加、同步、删除各个key内有数据才有，比如只有增加同步只需key1就行,都有的话，就是{1：[]，2：[]，3：[]}<br>7.每次同步完毕都要清除本书数据变更状态</p>
+<h1 id="结束语"><a href="#结束语" class="headerlink" title="结束语"></a>结束语</h1><p>思路还是比较乱，设计还是不是很成熟。终究是没有实际代码去验证，自己也很遗憾，等后续有成品东西出来，再接着验证去分享。</p>
+
       
     </div>
     <footer class="article-footer">
