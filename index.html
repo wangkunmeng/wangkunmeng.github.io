@@ -158,36 +158,26 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a><strong>前言</strong></h1><pre><code>分布式集群是NodeJS游戏服务端一个基本要素，多进程间玩家通讯是游戏服的一个核心问题。目前常见的多进程广播数据的方式一种是通过RPC，另一种是Redis，本文主要讲通过使用Redis来实现。
-</code></pre><h2 id="广播服设计基本规则"><a href="#广播服设计基本规则" class="headerlink" title="广播服设计基本规则"></a>广播服设计基本规则</h2><pre><code>1.广播服务器，只做登录、心跳、顶号、下线、广播数据基本逻辑功能。登录、心跳、顶号、下线是为了广播数据做辅助功能。
-2.单纯广播服务器一般是为短连接主服务器服务的，长连接的主服务器除了做广播服还要做链接保持服，同样不做其它逻辑。
-3.其它逻辑，比如向好友发信息，应交给逻辑服务器GameServer做。eg:逻辑服收到给好友发信息消息，判断完毕，具体向某个人广播时才向广播服指定人广播。
-4.通过Redis的发布订阅方式，监听指定channel来实现。
-</code></pre><h2 id="一个全服广播服的设计思路"><a href="#一个全服广播服的设计思路" class="headerlink" title="一个全服广播服的设计思路"></a>一个全服广播服的设计思路</h2><pre><code>1.Redis发布消息时应明确ServerID_ChanneelName,以缩小广播范围。
-2.发布的消息应包含消息包名，已为了客户端做区分
-3.单独向指定人广播的消息应指定目标人
-4.设计一个ServerRoom的房间类，已Server为单位Redis订阅各自独立的ServerID_ChanneelName
-5.玩家登陆后，查找自身ServerID对应的房间，若没有则需要创建并加入此房间。
-6.每个聊天服需要订阅ChanneelName比如Notice以便做全服通知
+        <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a><strong>前言</strong></h1><p>分布式集群是NodeJS游戏服务端一个基本要素，多进程间玩家通讯是游戏服的一个核心问题。目前常见的多进程广播数据的方式一种是通过RPC，另一种是Redis，本文主要讲通过使用Redis来实现。</p>
+<h2 id="广播服设计基本规则"><a href="#广播服设计基本规则" class="headerlink" title="广播服设计基本规则"></a>广播服设计基本规则</h2><ul>
+<li>广播服务器，只做登录、心跳、顶号、下线、广播数据基本逻辑功能。登录、心跳、顶号、下线是为了广播数据做辅助功能。</li>
+<li>单纯广播服务器一般是为短连接主服务器服务的，长连接的主服务器除了做广播服还要做链接保持服，同样不做其它逻辑。</li>
+<li>其它逻辑，比如向好友发信息，应交给逻辑服务器GameServer做。eg:逻辑服收到给好友发信息消息，判断完毕，具体向某个人广播时才向广播服指定人广播。</li>
+<li>通过Redis的发布订阅方式，监听指定channel来实现。</li>
+</ul>
+<h2 id="一个全服广播服的设计思路"><a href="#一个全服广播服的设计思路" class="headerlink" title="一个全服广播服的设计思路"></a>一个全服广播服的设计思路</h2><ul>
+<li>Redis发布消息时应明确ServerID_ChanneelName,以缩小广播范围。</li>
+<li>发布的消息应包含消息包名，已为了客户端做区分</li>
+<li>单独向指定人广播的消息应指定目标人</li>
+<li>设计一个ServerRoom的房间类，已Server为单位Redis订阅各自独立的ServerID_ChanneelName</li>
+<li>玩家登陆后，查找自身ServerID对应的房间，若没有则需要创建并加入此房间。</li>
+<li>每个聊天服需要订阅ChanneelName比如Notice以便做全服通知</li>
+</ul>
+<p>eg:发布<br>向1001服的UID为1001@234, 1001@100的玩家聊天</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">ChanneelName：<span class="string">"1001_Chat"</span></span><br><span class="line">&#123;</span><br><span class="line">    packageName: “fiend.chat”, <span class="comment">//包名</span></span><br><span class="line">    msg:<span class="string">"你好a"</span>, <span class="comment">//广播内容</span></span><br><span class="line">    <span class="string">"to"</span>:[<span class="number">1001</span>@<span class="number">234</span>, <span class="number">1001</span>@<span class="number">100</span>]/<span class="string">'all'</span>, <span class="comment">//接收单个uid或多个UID数组,当为all时表示当前channel所有人</span></span><br><span class="line">&#125;</span><br><span class="line">ChanneelName：<span class="string">"Notice"</span></span><br><span class="line">&#123;</span><br><span class="line">    packageName: “notice.item”, <span class="comment">//包名</span></span><br><span class="line">    msg:<span class="string">"你好a"</span>, <span class="comment">//广播内容</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>eg:订阅<br>1.各个订阅ChanneelName：”1001_Chat”的聊天服收到订阅消息，根据to字段判断接收人群，再向目标人发送消息<br>2.各个订阅ChanneelName：”Notice”的聊天服,遍历所有ServerRoom向所有人广播</p>
+<h1 id="结束语"><a href="#结束语" class="headerlink" title="结束语"></a>结束语</h1><p>比较仓促，还不会插入示意图，思路应该说清楚了，再具体还是文采匮乏啊！</p>
 
-eg:发布
-向1001服的UID为1001@234, 1001@100的玩家聊天
-ChanneelName：&quot;1001_Chat&quot;
-{
-    packageName: “fiend.chat”, //包名
-    msg:&quot;你好a&quot;, //广播内容
-    &quot;to&quot;:[1001@234, 1001@100]/&apos;all&apos;, //接收单个uid或多个UID数组,当为all时表示当前channel所有人
-}
-ChanneelName：&quot;Notice&quot;
-{
-    packageName: “notice.item”, //包名
-    msg:&quot;你好a&quot;, //广播内容
-}
-eg:订阅
-1.各个订阅ChanneelName：&quot;1001_Chat&quot;的聊天服收到订阅消息，根据to字段判断接收人群，再向目标人发送消息
-2.各个订阅ChanneelName：&quot;Notice&quot;的聊天服,遍历所有ServerRoom向所有人广播
-</code></pre><h1 id="结束语"><a href="#结束语" class="headerlink" title="结束语"></a>结束语</h1><pre><code>比较仓促，还不会插入示意图，思路应该说清楚了，再具体还是文采匮乏啊！
-</code></pre>
       
     </div>
     <footer class="article-footer">
