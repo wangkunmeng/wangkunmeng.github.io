@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>基于json格式的玩家数据兼容 | wangkm&#39;s blog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="前言游戏开发中，玩家数据格式不是一成不变的，保证玩家数据格式变更后玩家上线后依然能够进行游戏是基本原则。本文主要阐述数据库是Mysql时，以玩家表human为例子说明玩家数据兼容的一些方法。 12345678910111213CREATE TABLE `human` (    `uid` int(10) NOT NULL COMMENT &apos;玩家唯一ID&apos;,    `name` varchar(50">
+<meta property="og:type" content="article">
+<meta property="og:title" content="基于json格式的玩家数据兼容">
+<meta property="og:url" content="http://yoursite.com/2018/07/02/基于json格式的玩家数据兼容/index.html">
+<meta property="og:site_name" content="wangkm&#39;s blog">
+<meta property="og:description" content="前言游戏开发中，玩家数据格式不是一成不变的，保证玩家数据格式变更后玩家上线后依然能够进行游戏是基本原则。本文主要阐述数据库是Mysql时，以玩家表human为例子说明玩家数据兼容的一些方法。 12345678910111213CREATE TABLE `human` (    `uid` int(10) NOT NULL COMMENT &apos;玩家唯一ID&apos;,    `name` varchar(50">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2018-07-02T02:15:48.859Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="基于json格式的玩家数据兼容">
+<meta name="twitter:description" content="前言游戏开发中，玩家数据格式不是一成不变的，保证玩家数据格式变更后玩家上线后依然能够进行游戏是基本原则。本文主要阐述数据库是Mysql时，以玩家表human为例子说明玩家数据兼容的一些方法。 12345678910111213CREATE TABLE `human` (    `uid` int(10) NOT NULL COMMENT &apos;玩家唯一ID&apos;,    `name` varchar(50">
+  
+    <link rel="alternate" href="/atom.xml" title="wangkm&#39;s blog" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">wangkm&#39;s blog</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-基于json格式的玩家数据兼容" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/07/02/基于json格式的玩家数据兼容/" class="article-date">
+  <time datetime="2018-07-02T02:14:29.000Z" itemprop="datePublished">2018-07-02</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      基于json格式的玩家数据兼容
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>游戏开发中，玩家数据格式不是一成不变的，保证玩家数据格式变更后玩家上线后依然能够进行游戏是基本原则。<br>本文主要阐述数据库是Mysql时，以玩家表human为例子说明玩家数据兼容的一些方法。</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> <span class="string">`human`</span> (</span><br><span class="line">    <span class="string">`uid`</span> <span class="built_in">int</span>(<span class="number">10</span>) <span class="keyword">NOT</span> <span class="literal">NULL</span> <span class="keyword">COMMENT</span> <span class="string">'玩家唯一ID'</span>,</span><br><span class="line">    <span class="string">`name`</span> <span class="built_in">varchar</span>(<span class="number">50</span>) <span class="keyword">COLLATE</span> utf8_unicode_ci <span class="keyword">DEFAULT</span> <span class="string">''</span> <span class="keyword">COMMENT</span> <span class="string">'玩家名字'</span>,</span><br><span class="line">    <span class="string">`head`</span> <span class="built_in">varchar</span>(<span class="number">50</span>) <span class="keyword">COLLATE</span> utf8_unicode_ci <span class="keyword">DEFAULT</span> <span class="string">'[1,1,3]'</span> <span class="keyword">COMMENT</span> <span class="string">'当前头像'</span>,</span><br><span class="line">    <span class="string">`exp`</span> <span class="built_in">int</span>(<span class="number">10</span>) <span class="keyword">unsigned</span> <span class="keyword">DEFAULT</span> <span class="string">'0'</span> <span class="keyword">COMMENT</span> <span class="string">'当前经验'</span>,</span><br><span class="line">    <span class="string">`level`</span> <span class="built_in">int</span>(<span class="number">3</span>) <span class="keyword">unsigned</span> <span class="keyword">DEFAULT</span> <span class="string">'0'</span> <span class="keyword">COMMENT</span> <span class="string">'当前等级'</span>,</span><br><span class="line">    <span class="string">`age`</span> <span class="built_in">int</span>(<span class="number">3</span>) <span class="keyword">unsigned</span> <span class="keyword">DEFAULT</span> <span class="string">'0'</span> <span class="keyword">COMMENT</span> <span class="string">'玩家年龄'</span>,</span><br><span class="line">    <span class="string">`gold`</span> <span class="built_in">bigint</span>(<span class="number">20</span>) <span class="keyword">unsigned</span> <span class="keyword">DEFAULT</span> <span class="string">'0'</span> <span class="keyword">COMMENT</span> <span class="string">'当前元宝数'</span>,</span><br><span class="line">    <span class="string">`diamond`</span> <span class="built_in">bigint</span>(<span class="number">20</span>) <span class="keyword">unsigned</span> <span class="keyword">DEFAULT</span> <span class="string">'0'</span> <span class="keyword">COMMENT</span> <span class="string">'当前钻石数量'</span>,</span><br><span class="line">    <span class="string">`VIP`</span> <span class="built_in">int</span>(<span class="number">2</span>) <span class="keyword">unsigned</span> <span class="keyword">DEFAULT</span> <span class="string">'0'</span> <span class="keyword">COMMENT</span> <span class="string">'VIP等级'</span>,</span><br><span class="line">    <span class="string">`ctGetSkin`</span> <span class="built_in">text</span> <span class="keyword">COLLATE</span> utf8_unicode_ci <span class="keyword">COMMENT</span> <span class="string">'已获得不重复皮肤CfgId'</span>,</span><br><span class="line">    PRIMARY <span class="keyword">KEY</span> (<span class="string">`uid`</span>)</span><br><span class="line">) <span class="keyword">ENGINE</span>=MyISAM <span class="keyword">DEFAULT</span> <span class="keyword">CHARSET</span>=utf8 <span class="keyword">COLLATE</span>=utf8_unicode_ci <span class="keyword">COMMENT</span>=<span class="string">'玩家基础信息'</span>;</span><br></pre></td></tr></table></figure>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">human对象结构</span><br><span class="line">&#123;</span><br><span class="line">    uid:<span class="number">0</span>,</span><br><span class="line">    name:<span class="string">''</span>,</span><br><span class="line">    exp:<span class="number">0</span>,</span><br><span class="line">    level:<span class="number">0</span>，</span><br><span class="line">    age:<span class="number">0</span>,</span><br><span class="line">    gold:<span class="number">0</span>,</span><br><span class="line">    diamond:<span class="number">0</span>,</span><br><span class="line">    VIP:<span class="number">0</span>,</span><br><span class="line">    ctGetSkin:<span class="string">'&#123;&#125;'</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="一、增删某个字段"><a href="#一、增删某个字段" class="headerlink" title="一、增删某个字段"></a>一、增删某个字段</h2><p>eg.策划需求变更，需要删除human.age字段<br>1.直接删除tb human.age字段<br>2.删除human实例化对象中age属性</p>
+<h2 id="二、字段数据类型变更"><a href="#二、字段数据类型变更" class="headerlink" title="二、字段数据类型变更"></a>二、字段数据类型变更</h2><p>eg.uid从int类型转换为varchar<br>1.tb human.age字段类型能强转，直接转换<br>1.1 human实例化对象中uid属性调整为string</p>
+<p>2.human中uid类型不能强转,uid字段可以变更<br>2.1 采用增删字段的解决方式</p>
+<p>3.human中uid类型不能强转,uid字段不可以变更<br>3.1 新建字段内uid_1<br>3.2 写策略把uid值调整为目标格式，写到uid_1内<br>3.3 删除uid字段，uid_1字段重命名为uid</p>
+<p>3.*的方式不推荐，操作复杂，容易出错。</p>
+<h2 id="三、字段内数据内容格式变更"><a href="#三、字段内数据内容格式变更" class="headerlink" title="三、字段内数据内容格式变更"></a>三、字段内数据内容格式变更</h2><p>eg. ctGetSkin:’{id:{num},id:{num}}’ =&gt; ctGetSkin:’{id:{num, liftTime},id:{num, liftTime}}’<br>1.tb human.ctGetSkin 字段不变更<br>1.1 skin对象的添加lifeTime属性<br>1.2 调整ctGetSkin的解析方式,ctGetSkin = OnLoadCtGetSkin(reqly.ctGetSkin);</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//CtGetSkin对象</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">CtGetSkinDefault</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> &#123;&#125;;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//Skin对象</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">SkinDefault</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> &#123;</span><br><span class="line">        num:<span class="number">1</span>,</span><br><span class="line">        lifeTime:<span class="number">-1</span>,</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//数据解析容错</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">OnLoadCtGetSkin</span>(<span class="params">data</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">let</span> ret = CtGetSkinDefault();</span><br><span class="line">    <span class="keyword">if</span>(<span class="keyword">typeof</span> data === <span class="string">'string'</span>) &#123;</span><br><span class="line">        data = <span class="built_in">JSON</span>.parse(data);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span>(<span class="keyword">typeof</span> data !== <span class="string">'object'</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> ret;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//应该做一个属性递归判断</span></span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">let</span> k <span class="keyword">in</span> ret) &#123;</span><br><span class="line">        <span class="keyword">if</span>(data[k] === <span class="literal">undefined</span> || data[k] === <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="keyword">continue</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        ret[k] = data[k];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="归纳总结"><a href="#归纳总结" class="headerlink" title="归纳总结"></a>归纳总结</h2><p>分析完上面三个场景解决方案，发现OnLoadCtGetSkin的这种方式可以通用。只要设计好一套的human解析方式，兼容问题代码方面基本不会出问题，所有关注点就在table调整上了。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2018/07/02/基于json格式的玩家数据兼容/" data-id="cjj3muqz70000ygvne5wx8oni" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2018/06/25/NodeJS公会服的设计思路/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">NodeJS公会服的设计思路</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">July 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">June 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">May 2018</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2018/07/02/基于json格式的玩家数据兼容/">基于json格式的玩家数据兼容</a>
+          </li>
+        
+          <li>
+            <a href="/2018/06/25/NodeJS公会服的设计思路/">NodeJS公会服的设计思路</a>
+          </li>
+        
+          <li>
+            <a href="/2018/06/20/NodeJS基于Redis广播服的设计思路/">NodeJS基于Redis广播服的设计思路</a>
+          </li>
+        
+          <li>
+            <a href="/2018/06/14/基于Json的数据同步/">基于Json的数据同步</a>
+          </li>
+        
+          <li>
+            <a href="/2018/06/04/调试九法-笔记/">调试九法-笔记</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2018 wangkm<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+</body>
+</html>
