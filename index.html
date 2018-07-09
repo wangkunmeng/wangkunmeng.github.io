@@ -65,6 +65,61 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-使用消息字典做消息校验" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/07/09/使用消息字典做消息校验/" class="article-date">
+  <time datetime="2018-07-09T02:06:53.000Z" itemprop="datePublished">2018-07-09</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/07/09/使用消息字典做消息校验/">使用消息字典做消息校验</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>基于Http通信的游戏服务器和客户端一般首选JSON作为数据传输格式，通信参数校验是很琐碎的事。往往一些人为利用的BUG都与没有正确的参数校验，比如扣钱的参数传输负数等。人为做消息请求做参数校验又不能避免漏掉参数校验，我们需要一套行之有效的参数校验框架。本文主要讲如何利用做消息字典做消息检验。<br>下文主要以物品使用item_use消息做案例</p>
+<h2 id="案例"><a href="#案例" class="headerlink" title="案例"></a>案例</h2><p>通常的消息处理如下</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @description 物品使用</span></span><br><span class="line"><span class="comment"> * @param &#123;Object&#125; msg 消息体</span></span><br><span class="line"><span class="comment"> * @param &#123;Number&#125; msg.itemID 物品ID</span></span><br><span class="line"><span class="comment"> * @param &#123;Number&#125; msg.itemNum 物品数量</span></span><br><span class="line"><span class="comment"> * @param &#123;Object&#125; session 抽象连接对象</span></span><br><span class="line"><span class="comment"> * @param &#123;Function&#125; next 消息返回</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">item_use</span>(<span class="params">msg, session, next</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">if</span>(msg.itemID === <span class="literal">undefined</span> || !<span class="built_in">Number</span>.isFinite(msg.itemID) || msg.itemID &lt; <span class="number">0</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> next(&#123;<span class="attr">retCode</span>:<span class="string">'error param'</span>&#125;);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span>(msg.itemNum === <span class="literal">undefined</span> || !<span class="built_in">Number</span>.isFinite(msg.itemNum) || msg.itemNum &lt; <span class="number">0</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> next(&#123;<span class="attr">retCode</span>:<span class="string">'error param'</span>&#125;);</span><br><span class="line">  &#125;</span><br><span class="line">  ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>此时参数还少，手写基本还OK，一旦参数10或者更多，相信你写这逻辑时，会吐的。</p>
+<h2 id="设计实现"><a href="#设计实现" class="headerlink" title="设计实现"></a>设计实现</h2><figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">msgCfg.json</span><br><span class="line">&#123;</span><br><span class="line">  <span class="attr">"comment"</span> : &#123;</span><br><span class="line">    <span class="attr">"消息名"</span> : &#123;</span><br><span class="line">      <span class="attr">"comment"</span> : <span class="string">"备注"</span>,</span><br><span class="line">      <span class="attr">"param"</span> : &#123;&#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="attr">"val"</span> : &#123;</span><br><span class="line">    <span class="attr">"item_use"</span> : &#123;</span><br><span class="line">      <span class="attr">"comment"</span> : <span class="string">"物品使用"</span>,</span><br><span class="line">      <span class="attr">"param"</span> : &#123;</span><br><span class="line">        <span class="attr">"itemID"</span> : &#123;</span><br><span class="line">          <span class="attr">"type"</span> : <span class="string">"Number"</span>,</span><br><span class="line">          <span class="attr">"comment"</span> : <span class="string">"物品ID"</span></span><br><span class="line">        &#125;,</span><br><span class="line">        <span class="attr">"itemNum"</span> : &#123;</span><br><span class="line">          <span class="attr">"type"</span> : <span class="string">"Number"</span>,</span><br><span class="line">          <span class="attr">"comment"</span> : <span class="string">"物品数量"</span></span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>创建一个JSON文件msgCfg.json作为消息字典，并在其中添加物品使用的消息，格式类似如上。写一个消息管理模块MsgMng.js，在消息收到和功能处理前进行参数校验（！不是在item_use内，是item_use调用前），基本逻辑如下。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">MsgMng</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">this</span>.msgParam = <span class="built_in">require</span>(<span class="string">'msgCfg.json'</span>).val;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @description 参数校验</span></span><br><span class="line"><span class="comment"> * @param &#123;Number&#125; route</span></span><br><span class="line"><span class="comment"> * @param &#123;Object&#125; msg</span></span><br><span class="line"><span class="comment"> * @return &#123;null | Number&#125;</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line">MsgMng.prototype.paramCheck = <span class="function"><span class="keyword">function</span> (<span class="params">route, msg</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">let</span> err = <span class="literal">null</span>;</span><br><span class="line">  <span class="keyword">do</span> &#123;</span><br><span class="line">    <span class="keyword">let</span> param = <span class="keyword">this</span>.msgParam[route];</span><br><span class="line">    <span class="keyword">if</span>(!param) &#123;</span><br><span class="line">      logger.info(<span class="string">"msg: "</span> + route + <span class="string">" not register"</span>);</span><br><span class="line">      err = RetCode.HTTP_CODE_401;</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">let</span> k <span class="keyword">in</span> param) &#123;</span><br><span class="line">      <span class="keyword">let</span> key = <span class="string">''</span> + k;</span><br><span class="line">      <span class="keyword">let</span> type = param[key][<span class="string">"type"</span>];</span><br><span class="line">      <span class="keyword">let</span> value = msg[key];</span><br><span class="line">      <span class="keyword">if</span>(value === <span class="literal">undefined</span> || value === <span class="literal">null</span> || type !== value.constructor.name || (value.constructor === <span class="built_in">Number</span> &amp;&amp; (value &lt; <span class="number">0</span> || !<span class="built_in">Number</span>.isFinite(value)))) &#123;</span><br><span class="line">        logger.info(<span class="string">"msg: "</span> + route + <span class="string">" param is:[%s], reqMsg is:[%s]"</span>, route, <span class="built_in">JSON</span>.stringify(param), <span class="built_in">JSON</span>.stringify(msg));</span><br><span class="line">        err = RetCode.ERROR_REQUEST_PARAM;</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125; <span class="keyword">while</span>(<span class="literal">false</span>);</span><br><span class="line">  <span class="keyword">return</span> err;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>这样新增消息只要在消息字典内配置好消息包名参数类型就能处理绝大多数参数校验的代码量了。</p>
+<h2 id="继续深挖"><a href="#继续深挖" class="headerlink" title="继续深挖"></a>继续深挖</h2><p>消息字典的用途不止这个简单的作用</p>
+<ul>
+<li>前后端对应消息作为标准</li>
+<li>消息功能和参数查询方便</li>
+<li>模块交接减少难度</li>
+<li>NX点直接做为消息生成模板</li>
+<li>为每个参数配置测试模式值</li>
+<li>可以自己改造，具体参数注册校验函数</li>
+<li>自己想吧…</li>
+</ul>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>不想盲婚哑嫁，消息字典应该是Http通讯必不可少的一部分。减少体力活，是一个合格的码农应该觉醒的意识。只有效率提升上去，才能搬更多的砖。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2018/07/09/使用消息字典做消息校验/" data-id="cjjdmomqk0000rcvn8t4h7vyv" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-基于json格式的玩家数据兼容" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2018/07/02/基于json格式的玩家数据兼容/" class="article-date">
@@ -102,7 +157,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/07/02/基于json格式的玩家数据兼容/" data-id="cjj3muqz70000ygvne5wx8oni" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/07/02/基于json格式的玩家数据兼容/" data-id="cjjdmomqw0007rcvnijs2ghim" class="article-share-link">Share</a>
       
       
     </footer>
@@ -173,7 +228,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/06/25/NodeJS公会服的设计思路/" data-id="cjj3muqzb0001ygvn8lvuh651" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/06/25/NodeJS公会服的设计思路/" data-id="cjjdmomqr0002rcvna49ulvig" class="article-share-link">Share</a>
       
       
     </footer>
@@ -228,7 +283,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/06/20/NodeJS基于Redis广播服的设计思路/" data-id="cjj3muqzf0003ygvniminc13q" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/06/20/NodeJS基于Redis广播服的设计思路/" data-id="cjjdmomqp0001rcvn526uwjmc" class="article-share-link">Share</a>
       
       
     </footer>
@@ -278,7 +333,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/06/14/基于Json的数据同步/" data-id="cjj3muqzk0007ygvnpx4vutiy" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/06/14/基于Json的数据同步/" data-id="cjjdmomqu0005rcvnpp1oagp7" class="article-share-link">Share</a>
       
       
     </footer>
@@ -401,7 +456,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/06/04/调试九法-笔记/" data-id="cjj3muqzh0004ygvn88mp1va9" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/06/04/调试九法-笔记/" data-id="cjjdmomqt0004rcvn3emeqj7x" class="article-share-link">Share</a>
       
       
     </footer>
@@ -440,7 +495,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/05/30/学习计划/" data-id="cjj3muqzi0005ygvnityfj3k8" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/05/30/学习计划/" data-id="cjjdmomqv0006rcvnclnkc86l" class="article-share-link">Share</a>
       
       
     </footer>
@@ -492,7 +547,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/05/30/书籍目录/" data-id="cjj3muqze0002ygvnbg13eoxp" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/05/30/书籍目录/" data-id="cjjdmomqs0003rcvn6o5ogof1" class="article-share-link">Share</a>
       
       
     </footer>
@@ -562,7 +617,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/05/25/软件开发者路线图-笔记/" data-id="cjj3muqzj0006ygvndvqrjabn" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/05/25/软件开发者路线图-笔记/" data-id="cjjdmomqx0008rcvn4v8rbz2r" class="article-share-link">Share</a>
       
       
     </footer>
@@ -603,6 +658,10 @@
       <ul>
         
           <li>
+            <a href="/2018/07/09/使用消息字典做消息校验/">使用消息字典做消息校验</a>
+          </li>
+        
+          <li>
             <a href="/2018/07/02/基于json格式的玩家数据兼容/">基于json格式的玩家数据兼容</a>
           </li>
         
@@ -616,10 +675,6 @@
         
           <li>
             <a href="/2018/06/14/基于Json的数据同步/">基于Json的数据同步</a>
-          </li>
-        
-          <li>
-            <a href="/2018/06/04/调试九法-笔记/">调试九法-笔记</a>
           </li>
         
       </ul>
