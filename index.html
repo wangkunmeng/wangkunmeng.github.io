@@ -65,6 +65,97 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-游戏任务系统的设计(上)" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/07/16/游戏任务系统的设计(上)/" class="article-date">
+  <time datetime="2018-07-16T02:49:27.000Z" itemprop="datePublished">2018-07-16</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/07/16/游戏任务系统的设计(上)/">游戏任务系统的设计(上</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>忙忙碌碌地又一周过去了，又到了每周博客的时间了，这一周疲惫地推各种功能，没带脑子思考，又没心思用半天时间做一个新的功能探讨，终了翻了翻以前设计的功能，接下来就拿自己设计的任务系统做讲解了。</p>
+<h2 id="需求"><a href="#需求" class="headerlink" title="需求"></a>需求</h2><p>任务系统需求有三种：</p>
+<ul>
+<li>每日任务：每个任务有独立的奖励，每日还有活跃度，活跃度可以兑换奖励，任务有次数限制，每日凌晨3点刷新，并清除活跃度。</li>
+<li>周任务：周任务没有活跃度，除了个人奖励外，会增加公会积分，不可重复完成，每周一凌晨3点刷新。</li>
+<li>成就：主要奖励成就点（用于显示玩家水平的一种方式），成就不可刷新。</li>
+</ul>
+<p>任务类型分类：</p>
+<ul>
+<li>聊天：世界频道发送**条信息 (日常)</li>
+<li>战斗：扫荡**关卡次 (日常)</li>
+<li>好友：添加**个好友 (日常)</li>
+<li>战斗：进行世界Boss达到**名 (周常、成就)</li>
+<li>登录：玩家累计登录**次数可完成 (日常、成就、周常)</li>
+<li>卡牌：玩家培养**次卡牌 (日常)</li>
+<li>卡牌：玩家拥有**张卡牌 (成就)</li>
+<li>卡牌：玩家拥有**张X星卡牌 (成就)</li>
+</ul>
+<p>…我又不是策划就不一一枚举了</p>
+<h2 id="功能提取"><a href="#功能提取" class="headerlink" title="功能提取"></a>功能提取</h2><ul>
+<li>刷新处理</li>
+<li>任务类型分类</li>
+<li>任务分发</li>
+<li>任务记录</li>
+<li>任务触发</li>
+<li>奖励发送</li>
+<li>任务动态增加</li>
+</ul>
+<p>…仔细想想提取的又不是那个的有条理</p>
+<h2 id="设计实现"><a href="#设计实现" class="headerlink" title="设计实现"></a>设计实现</h2><p>终于可以晒代码，水篇幅了，作为一个服务器端程序员，讲故事的确不是我所长。</p>
+<h3 id="刷新"><a href="#刷新" class="headerlink" title="刷新"></a>刷新</h3><p>1、玩家每次登录时，上次刷新时间戳和当前时间做比较</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">isEnableRefresh</span>(<span class="params">lastTime</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">let</span> hour5Time = <span class="built_in">Math</span>.floor(<span class="keyword">new</span> <span class="built_in">Date</span>().setHours(<span class="number">3</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>) / <span class="number">1000</span>);</span><br><span class="line">  <span class="keyword">return</span> ((lastTime &lt; hour5Time) &amp;&amp; ((lastTime &lt; hour5Time - <span class="number">86400</span>) || (utils.timestamp() &gt;= hour5Time)));</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>2、系统每日3天发送刷新事件，每个在线玩家的任务刷新</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">sysDailyRefresh</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">let</span> nextTime = <span class="built_in">Math</span>.floor(<span class="keyword">new</span> <span class="built_in">Date</span>().setHours(<span class="number">3</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>) / <span class="number">1000</span>) + <span class="number">86400</span>;</span><br><span class="line">  <span class="keyword">let</span> seconds = nextTime - utils.timestamp();</span><br><span class="line">  setTimeout(<span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">    userDailyRefresh();</span><br><span class="line">    sysDailyRefresh();</span><br><span class="line">  &#125;, seconds * <span class="number">1000</span>);</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>3.周任务，需要判断判断再添加今日是否是周一即可</p>
+<h3 id="任务类型分类"><a href="#任务类型分类" class="headerlink" title="任务类型分类"></a>任务类型分类</h3><p>仔细分各种任务类型，再一一枚举</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> TASK_MODE = &#123;</span><br><span class="line">    FINISH_TASK: &#123;</span><br><span class="line">      ALL:            <span class="number">11</span>,  <span class="comment">//所有</span></span><br><span class="line">    &#125;,</span><br><span class="line">    RANDOM_CARD: &#123;</span><br><span class="line">      NUM:            <span class="number">21</span>,  <span class="comment">//召唤-累计召唤</span></span><br><span class="line">    &#125;,</span><br><span class="line">    BATTLE: &#123;</span><br><span class="line">      MAIN:           <span class="number">31</span>,  <span class="comment">//战斗-主线剧情</span></span><br><span class="line">      UNLIMITED:      <span class="number">32</span>,  <span class="comment">//战斗-无限模式</span></span><br><span class="line">      WORLD_BOSS:     <span class="number">33</span>,  <span class="comment">//战斗-世界Boss</span></span><br><span class="line">    &#125;,</span><br><span class="line">    FRIEND: &#123;</span><br><span class="line">      HAVE:           <span class="number">41</span>,  <span class="comment">//好友-拥有好友</span></span><br><span class="line">    &#125;,</span><br><span class="line">    CARD: &#123;</span><br><span class="line">      LEVEL_DEV:      <span class="number">51</span>,  <span class="comment">//卡牌-培养</span></span><br><span class="line">      LEVEL:          <span class="number">52</span>,  <span class="comment">//卡牌-等级</span></span><br><span class="line">      STAR:           <span class="number">53</span>,  <span class="comment">//卡牌-星级拥有</span></span><br><span class="line">    &#125;,</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>再具体细分抽象可以为三类</p>
+<ul>
+<li>累计型：需要玩家手动触发的，每次响应累计+1，比如累计登陆、聊天次数</li>
+<li>拥有型：总共拥有多少，比如拥有卡牌数量</li>
+<li>排名型：达到多少名，因为和累计判断相反，故单独抽出来</li>
+<li>ALL型：完成所有任务，这种一般针对日常任务</li>
+</ul>
+<h3 id="任务分发"><a href="#任务分发" class="headerlink" title="任务分发"></a>任务分发</h3><p>简单的采用玩家上线自动领取，毕竟是个坑钱的手游，那么任务触发的设计情怀。</p>
+<h3 id="任务记录"><a href="#任务记录" class="headerlink" title="任务记录"></a>任务记录</h3><p>因为都是一些简单的任务，可以抽象成下面几个属性记录即可</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="string">"type"</span> : <span class="number">0</span> <span class="comment">//日常、周常、成就</span></span><br><span class="line">    <span class="string">"mode"</span> : <span class="number">0</span> <span class="comment">//任务具体枚举类型</span></span><br><span class="line">    <span class="string">"cfgId"</span> : <span class="number">0</span> <span class="comment">//对应静态配置ID，用于查询具体</span></span><br><span class="line">    <span class="string">"num"</span> : <span class="number">0</span> <span class="comment">//任务需求数量、名次、等级</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>刷新、完成领取奖励后，直接删除即可。<br>任务完成的状态只有玩家领取任务奖励成功才出发。</p>
+<h3 id="任务触发"><a href="#任务触发" class="headerlink" title="任务触发"></a>任务触发</h3><p>分为条件触发和登录触发两种方式</p>
+<h4 id="登录触发"><a href="#登录触发" class="headerlink" title="登录触发"></a>登录触发</h4><p>顾名思义，玩家登录后，需要遍历玩家数据，后直接触发任务，主要应对拥有型任务。<br>eg:每次玩家上线，都要计算玩家卡组数量，并触发任务发送任务类型、以及卡牌数量。</p>
+<h4 id="条件触发"><a href="#条件触发" class="headerlink" title="条件触发"></a>条件触发</h4><p>直接举例说明，每次玩家获得卡牌都要计算玩家卡组数量，并触发任务发送任务类型、以及卡牌数量。</p>
+<p>其实条件触发基本上所有任务类型都可以截获，但登录触发如果没有的话手动修改数据、新增成就任务等都无法兼容，所以登录触发是有必要的，尤其是针对一次性的成就。</p>
+<p>下面是具体针四种抽象的任务类型的响应</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @description 常规通用任务触发</span></span><br><span class="line"><span class="comment"> * 累计型</span></span><br><span class="line"><span class="comment"> * @param &#123;Object&#125; objTask 任务Obj</span></span><br><span class="line"><span class="comment"> * @param &#123;Number&#125; num 数量</span></span><br><span class="line"><span class="comment"> * @return &#123;Boolean&#125; 是否移除任务监听</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">commonTrigger</span> (<span class="params">objTask, num</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">let</span> isRemoveListener;</span><br><span class="line">  <span class="keyword">do</span> &#123;</span><br><span class="line">    isRemoveListener = <span class="literal">false</span>;</span><br><span class="line">    <span class="keyword">let</span> tbObjTask = Config.getTbObjTask(objTask.getAttrInt(<span class="string">'type'</span>), objTask.getAttrInt(<span class="string">'cfgId'</span>));</span><br><span class="line">    <span class="keyword">if</span>(!tbObjTask) &#123;</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">let</span> oldNum = objTask.getAttrInt(<span class="string">'num'</span>);</span><br><span class="line">    <span class="keyword">let</span> maxNum = tbObjTask[<span class="string">"num"</span>];</span><br><span class="line">    <span class="keyword">let</span> isMax = (oldNum + num) &gt;= maxNum;</span><br><span class="line">    <span class="keyword">let</span> newNum = isMax ? maxNum : (oldNum + num);</span><br><span class="line">    objTask.setAttrInt(<span class="string">'num'</span>, newNum);</span><br><span class="line">    isRemoveListener = isMax;</span><br><span class="line">  &#125; <span class="keyword">while</span>(<span class="literal">false</span>);</span><br><span class="line">  <span class="keyword">return</span> isRemoveListener;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @description 常规通用任务触发</span></span><br><span class="line"><span class="comment"> * 拥有型</span></span><br><span class="line"><span class="comment"> * @param &#123;Object&#125; objTask 任务Obj</span></span><br><span class="line"><span class="comment"> * @param &#123;Number&#125; num 数量</span></span><br><span class="line"><span class="comment"> * @return &#123;Boolean&#125; 是否移除任务监听</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">commonHaveTrigger</span> (<span class="params">objTask, num</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">let</span> isRemoveListener;</span><br><span class="line">  <span class="keyword">do</span> &#123;</span><br><span class="line">    <span class="keyword">let</span> tbObjTask = Config.getTbObjTask(objTask.getAttrInt(<span class="string">'type'</span>), objTask.getAttrInt(<span class="string">'cfgId'</span>));</span><br><span class="line">    <span class="keyword">if</span>(!tbObjTask) &#123;</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">let</span> maxNum = tbObjTask[<span class="string">"num"</span>];</span><br><span class="line">    <span class="keyword">let</span> isMax = num &gt;= maxNum;</span><br><span class="line">    <span class="keyword">let</span> newNum = isMax ? maxNum : num;</span><br><span class="line">    objTask.setAttrInt(<span class="string">'num'</span>, newNum);</span><br><span class="line">    isRemoveListener = isMax;</span><br><span class="line">  &#125; <span class="keyword">while</span>(<span class="literal">false</span>);</span><br><span class="line">  <span class="keyword">return</span> isRemoveListener;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @description 常规通用任务触发</span></span><br><span class="line"><span class="comment"> * 排名型</span></span><br><span class="line"><span class="comment"> * @param &#123;Object&#125; objTask 任务Obj</span></span><br><span class="line"><span class="comment"> * @param &#123;Number&#125; num 名次</span></span><br><span class="line"><span class="comment"> * @return &#123;Boolean&#125; 是否移除任务监听</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">commonRankTrigger</span> (<span class="params">objTask, num</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">let</span> isRemoveListener;</span><br><span class="line">  <span class="keyword">do</span> &#123;</span><br><span class="line">    <span class="keyword">let</span> tbObjTask = Config.getTbObjTask(objTask.getAttrInt(<span class="string">'type'</span>), objTask.getAttrInt(<span class="string">'cfgId'</span>));</span><br><span class="line">    <span class="keyword">if</span>(!tbObjTask) &#123;</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">let</span> maxNum = tbObjTask[<span class="string">"num"</span>];</span><br><span class="line">    <span class="keyword">let</span> isMax = num &lt;= maxNum;</span><br><span class="line">    <span class="keyword">let</span> newNum = isMax ? maxNum : num;</span><br><span class="line">    objTask.setAttrInt(<span class="string">'num'</span>, newNum);</span><br><span class="line">    isRemoveListener = isMax;</span><br><span class="line">  &#125; <span class="keyword">while</span>(<span class="literal">false</span>);</span><br><span class="line">  <span class="keyword">return</span> isRemoveListener;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @description 常规通用任务触发</span></span><br><span class="line"><span class="comment"> * ALL型</span></span><br><span class="line"><span class="comment"> * ！此类型有外部任务种类统计任务剩余数量为0时会出发一次</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">commonAll</span>(<span class="params">objTask, type</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">let</span> isRemoveListener;</span><br><span class="line">  <span class="keyword">do</span> &#123;</span><br><span class="line">    isRemoveListener = <span class="literal">false</span>;</span><br><span class="line">    <span class="keyword">if</span>(objTask.getAttrInt(<span class="string">'type'</span>) !== type) &#123; <span class="comment">//类型相同则完成</span></span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">let</span> tbObjTask = Config.getTbObjTask(objTask.getAttrInt(<span class="string">'type'</span>), objTask.getAttrInt(<span class="string">'cfgId'</span>));</span><br><span class="line">    <span class="keyword">if</span>(!tbObjTask) &#123;</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">let</span> maxNum = tbObjTask[<span class="string">"num"</span>];</span><br><span class="line">    objTask.setAttrInt(maxNum);</span><br><span class="line">    isRemoveListener = <span class="literal">true</span>;</span><br><span class="line">  &#125; <span class="keyword">while</span>(<span class="literal">false</span>);</span><br><span class="line">  <span class="keyword">return</span> isRemoveListener;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h2><p>时间准备的不够充足，先写到这里吧，下篇再具体讲解。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2018/07/16/游戏任务系统的设计(上)/" data-id="cjjnoakmr0006t4vnde4ic1eo" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-使用消息字典做消息校验" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2018/07/09/使用消息字典做消息校验/" class="article-date">
@@ -110,7 +201,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/07/09/使用消息字典做消息校验/" data-id="cjjdmomqk0000rcvn8t4h7vyv" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/07/09/使用消息字典做消息校验/" data-id="cjjnoakmp0004t4vn5rsb0prp" class="article-share-link">Share</a>
       
       
     </footer>
@@ -157,7 +248,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/07/02/基于json格式的玩家数据兼容/" data-id="cjjdmomqw0007rcvnijs2ghim" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/07/02/基于json格式的玩家数据兼容/" data-id="cjjnoakmt0008t4vn9gol0jkg" class="article-share-link">Share</a>
       
       
     </footer>
@@ -228,7 +319,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/06/25/NodeJS公会服的设计思路/" data-id="cjjdmomqr0002rcvna49ulvig" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/06/25/NodeJS公会服的设计思路/" data-id="cjjnoakml0001t4vnmytas507" class="article-share-link">Share</a>
       
       
     </footer>
@@ -283,7 +374,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/06/20/NodeJS基于Redis广播服的设计思路/" data-id="cjjdmomqp0001rcvn526uwjmc" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/06/20/NodeJS基于Redis广播服的设计思路/" data-id="cjjnoakmg0000t4vnvinhwr4l" class="article-share-link">Share</a>
       
       
     </footer>
@@ -333,7 +424,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/06/14/基于Json的数据同步/" data-id="cjjdmomqu0005rcvnpp1oagp7" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/06/14/基于Json的数据同步/" data-id="cjjnoakmu0009t4vnswk3a84j" class="article-share-link">Share</a>
       
       
     </footer>
@@ -456,7 +547,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/06/04/调试九法-笔记/" data-id="cjjdmomqt0004rcvn3emeqj7x" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/06/04/调试九法-笔记/" data-id="cjjnoakms0007t4vnsks75jc2" class="article-share-link">Share</a>
       
       
     </footer>
@@ -495,7 +586,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/05/30/学习计划/" data-id="cjjdmomqv0006rcvnclnkc86l" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/05/30/学习计划/" data-id="cjjnoakmo0003t4vnjndpdeg5" class="article-share-link">Share</a>
       
       
     </footer>
@@ -547,7 +638,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/05/30/书籍目录/" data-id="cjjdmomqs0003rcvn6o5ogof1" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/05/30/书籍目录/" data-id="cjjnoakmn0002t4vnohba6637" class="article-share-link">Share</a>
       
       
     </footer>
@@ -617,7 +708,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/05/25/软件开发者路线图-笔记/" data-id="cjjdmomqx0008rcvn4v8rbz2r" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/05/25/软件开发者路线图-笔记/" data-id="cjjnoakmq0005t4vn7xear70f" class="article-share-link">Share</a>
       
       
     </footer>
@@ -658,6 +749,10 @@
       <ul>
         
           <li>
+            <a href="/2018/07/16/游戏任务系统的设计(上)/">游戏任务系统的设计(上</a>
+          </li>
+        
+          <li>
             <a href="/2018/07/09/使用消息字典做消息校验/">使用消息字典做消息校验</a>
           </li>
         
@@ -671,10 +766,6 @@
         
           <li>
             <a href="/2018/06/20/NodeJS基于Redis广播服的设计思路/">NodeJS基于Redis广播服的设计思路</a>
-          </li>
-        
-          <li>
-            <a href="/2018/06/14/基于Json的数据同步/">基于Json的数据同步</a>
           </li>
         
       </ul>
