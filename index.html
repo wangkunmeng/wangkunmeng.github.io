@@ -65,6 +65,53 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-玩家定时器模块的设计与实现" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/07/26/玩家定时器模块的设计与实现/" class="article-date">
+  <time datetime="2018-07-26T04:51:35.000Z" itemprop="datePublished">2018-07-26</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/07/26/玩家定时器模块的设计与实现/">玩家定时器模块的设计与实现</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>游戏开发中，玩家一些定时刷新的物品、任务，若每个对象都增加一个setTimeout函数，数量就很恐怖了，尤其是玩家数量一多就更废了。本文针对这一现象，设计了一种线性定时器，它同时只有一个定时事件处于激活状态，当前定时事件处理完毕会启动下一个定时事件。</p>
+<h2 id="案例"><a href="#案例" class="headerlink" title="案例"></a>案例</h2><p>玩家角色可以穿多件时装，时装又有时间限制，时装时间到期后，需要服务端把到期的时装卸下。</p>
+<h2 id="分析"><a href="#分析" class="headerlink" title="分析"></a>分析</h2><h3 id="方案一"><a href="#方案一" class="headerlink" title="方案一"></a>方案一</h3><p>为每个装扮增加一个定时器，到期时卸下装扮。<br>这就需要面对玩家有N个装扮，就需要同时启动N个定时器的问题。</p>
+<h3 id="方案二"><a href="#方案二" class="headerlink" title="方案二"></a>方案二</h3><p>不做定时器，每次每次客户端请求一下，所有时装遍历一遍进行到期卸载的逻辑处理。<br>由于无脑遍历，付出的计算量和实现的功能相比，有点得不偿失，尤其是涉及到更多的定时时。</p>
+<h3 id="方案三"><a href="#方案三" class="headerlink" title="方案三"></a>方案三</h3><p>做一个数组，数组内每个成员记录装扮ID和过期时间，并对时间从小到大排序。<br>装扮模块增加一个定时器，时间是数组第一个元素时间，时间到期卸载对应装扮，并pop指定此成员。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">[</span><br><span class="line">    &#123;</span><br><span class="line">        SkinId:<span class="number">30001</span>,</span><br><span class="line">        endTime:<span class="number">1000000</span>,</span><br><span class="line">    &#125;，</span><br><span class="line">    &#123;</span><br><span class="line">        SkinId:<span class="number">30002</span>,</span><br><span class="line">        endTime:<span class="number">2000000</span>,</span><br><span class="line">    &#125;，</span><br><span class="line">]</span><br></pre></td></tr></table></figure>
+<p>此方案单对装扮是比较完美，但仍不能避免玩家多种不同类型的定时事件，会同时启动多个定时器的问题。</p>
+<h3 id="方案四"><a href="#方案四" class="headerlink" title="方案四"></a>方案四</h3><p>其实就是方案三的改良版，把设计一个定时器模块，此模块内部维护一个数组，数据内成员具有基本属性{type:事件类型，endTime:响应时间，id:目标ID…},数组内部依然对每个成员按响应事件按从下到大排序。</p>
+<p>此方案实现了玩家身上，同时只有一个定时器模块响应的需求，同时又能高效的处理按时间监听的事件。</p>
+<h2 id="设计实现"><a href="#设计实现" class="headerlink" title="设计实现"></a>设计实现</h2><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//监听类型</span></span><br><span class="line"><span class="keyword">const</span> LISTENER_TYPE = &#123;</span><br><span class="line">    APPEARANCE: <span class="number">1</span>,</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @description 生成监听</span></span><br><span class="line"><span class="comment"> * @param &#123;LISTENER_TYPE&#125; type</span></span><br><span class="line"><span class="comment"> * @param &#123;Number&#125; end_time</span></span><br><span class="line"><span class="comment"> * @param &#123;*&#125; id //索引可以是对象</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">NewListener</span>(<span class="params">type, end_time, id</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> &#123;</span><br><span class="line">        type: type,</span><br><span class="line">        end_time: end_time,</span><br><span class="line">        id: id,</span><br><span class="line">    &#125;;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @description 增加监听</span></span><br><span class="line"><span class="comment"> * @param &#123;Object&#125; userData 玩家</span></span><br><span class="line"><span class="comment"> * @param &#123;NewListener&#125; listener</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">AddListener</span>(<span class="params">userData, listener</span>) </span>&#123;</span><br><span class="line">    MF.Log.logDebug(<span class="string">'AddListener: '</span>, <span class="built_in">JSON</span>.stringify(listener));</span><br><span class="line">    <span class="keyword">if</span>(!userData.Timer) &#123;</span><br><span class="line">        userData.Timer = [];</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span>(listener.end_time &lt;= <span class="number">0</span> || listener.type === <span class="literal">undefined</span>) &#123;</span><br><span class="line">        MF.Log.logError(<span class="string">'AddListener: '</span>, <span class="built_in">JSON</span>.stringify(listener));</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    userData.Timer.push(listener);</span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">let</span> i = userData.Timer.length - <span class="number">1</span>; i &gt;= <span class="number">1</span>; i--) &#123;</span><br><span class="line">        <span class="keyword">if</span>(userData.Timer[i<span class="number">-1</span>].end_time &lt;= userData.Timer[i].end_time) &#123;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">let</span> tmp = userData.Timer[i];</span><br><span class="line">        userData.Timer[i] = userData.Timer[i<span class="number">-1</span>];</span><br><span class="line">        userData.Timer[i<span class="number">-1</span>] = tmp;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @description 添加并踢出雷同的，更新序列</span></span><br><span class="line"><span class="comment"> * !!添加并向前排除相同的</span></span><br><span class="line"><span class="comment"> * @param &#123;Object&#125; userData 玩家</span></span><br><span class="line"><span class="comment"> * @param &#123;NewListener&#125; listener</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">UpdateListener</span>(<span class="params">userData, listener</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">if</span>(!userData.Timer) &#123;</span><br><span class="line">        userData.Timer = [];</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span>(listener.end_time &lt;= <span class="number">0</span> || listener.type === <span class="literal">undefined</span>) &#123;</span><br><span class="line">        MF.Log.logError(<span class="string">'AddListener: '</span>, <span class="built_in">JSON</span>.stringify(listener));</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    userData.Timer.push(listener);</span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">let</span> i = userData.Timer.length - <span class="number">1</span>; i &gt;= <span class="number">1</span>; i--) &#123;</span><br><span class="line">        <span class="keyword">if</span>(userData.Timer[i<span class="number">-1</span>].type === listener.type &amp;&amp;</span><br><span class="line">            userData.Timer[i<span class="number">-1</span>].end_time !== listener.end_time &amp;&amp;</span><br><span class="line">            <span class="built_in">JSON</span>.stringify(userData.Timer[i<span class="number">-1</span>].id) === <span class="built_in">JSON</span>.stringify(listener.id)) &#123;</span><br><span class="line">            userData.Timer.splice(i<span class="number">-1</span>, <span class="number">1</span>);</span><br><span class="line">            i--;</span><br><span class="line">            <span class="keyword">continue</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span>(userData.Timer[i<span class="number">-1</span>].end_time &lt;= userData.Timer[i].end_time) &#123;</span><br><span class="line">            <span class="keyword">continue</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">let</span> tmp = userData.Timer[i];</span><br><span class="line">        userData.Timer[i] = userData.Timer[i<span class="number">-1</span>];</span><br><span class="line">        userData.Timer[i<span class="number">-1</span>] = tmp;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @description 运行</span></span><br><span class="line"><span class="comment"> * @param &#123;Object&#125; userData 玩家</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">AutoRun</span>(<span class="params">userData</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">let</span> curTime = MF.Util.CurTimeStamp();</span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">let</span> i = <span class="number">0</span>; i &lt; userData.Timer.length; i++) &#123;</span><br><span class="line">        <span class="keyword">let</span> listener = userData.Timer[i];</span><br><span class="line">        <span class="keyword">if</span>(curTime &lt; listener.end_time) &#123;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        EndTimerEvent(userData, listener);</span><br><span class="line">        userData.Timer.splice(i, <span class="number">1</span>);</span><br><span class="line">        i--;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * @description 触发监听事件</span></span><br><span class="line"><span class="comment"> * @param &#123;Object&#125; userData 玩家</span></span><br><span class="line"><span class="comment"> * @param &#123;NewListener&#125; listener</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">EndTimerEvent</span>(<span class="params">userData, listener</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">let</span> type = listener.type;</span><br><span class="line">    <span class="keyword">switch</span>(type) &#123;</span><br><span class="line">        <span class="keyword">case</span> LISTENER_TYPE.APPEARANCE: &#123;</span><br><span class="line">            WW.Appearance.OnEndTimerEvent(userData, listener);</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">default</span>: &#123;</span><br><span class="line">            MF.Log.logError(<span class="string">'Listener type not defined: '</span>, <span class="built_in">JSON</span>.stringify(<span class="built_in">arguments</span>));</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>上述是一个方案四的变种，AutoRun函数没有用定时器，因为项目中玩家数据是在Redis中存放的，所以在每次Redis取玩家数据后调用AutoRun函数。如果玩家数据在内存中可以自行改写AutoRun函数。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2018/07/26/玩家定时器模块的设计与实现/" data-id="cjk230d0j0005iovn63ninffu" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-游戏任务系统的设计(上)" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2018/07/16/游戏任务系统的设计(上)/" class="article-date">
@@ -146,7 +193,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/07/16/游戏任务系统的设计(上)/" data-id="cjjnoakmr0006t4vnde4ic1eo" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/07/16/游戏任务系统的设计(上)/" data-id="cjk230d0n0009iovna3ox91c4" class="article-share-link">Share</a>
       
       
     </footer>
@@ -201,7 +248,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/07/09/使用消息字典做消息校验/" data-id="cjjnoakmp0004t4vn5rsb0prp" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/07/09/使用消息字典做消息校验/" data-id="cjk230czz0000iovnc2j5i97e" class="article-share-link">Share</a>
       
       
     </footer>
@@ -248,7 +295,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/07/02/基于json格式的玩家数据兼容/" data-id="cjjnoakmt0008t4vn9gol0jkg" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/07/02/基于json格式的玩家数据兼容/" data-id="cjk230d080004iovnjgapi0sy" class="article-share-link">Share</a>
       
       
     </footer>
@@ -319,7 +366,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/06/25/NodeJS公会服的设计思路/" data-id="cjjnoakml0001t4vnmytas507" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/06/25/NodeJS公会服的设计思路/" data-id="cjk230d070003iovnphotz5eb" class="article-share-link">Share</a>
       
       
     </footer>
@@ -374,7 +421,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/06/20/NodeJS基于Redis广播服的设计思路/" data-id="cjjnoakmg0000t4vnvinhwr4l" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/06/20/NodeJS基于Redis广播服的设计思路/" data-id="cjk230d040001iovn5i8msw8e" class="article-share-link">Share</a>
       
       
     </footer>
@@ -424,7 +471,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/06/14/基于Json的数据同步/" data-id="cjjnoakmu0009t4vnswk3a84j" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/06/14/基于Json的数据同步/" data-id="cjk230d0j0006iovn23vxopiz" class="article-share-link">Share</a>
       
       
     </footer>
@@ -547,7 +594,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/06/04/调试九法-笔记/" data-id="cjjnoakms0007t4vnsks75jc2" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/06/04/调试九法-笔记/" data-id="cjk230d0m0008iovns0v277hs" class="article-share-link">Share</a>
       
       
     </footer>
@@ -586,7 +633,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/05/30/学习计划/" data-id="cjjnoakmo0003t4vnjndpdeg5" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/05/30/学习计划/" data-id="cjk230d0l0007iovntj941vtz" class="article-share-link">Share</a>
       
       
     </footer>
@@ -638,77 +685,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/05/30/书籍目录/" data-id="cjjnoakmn0002t4vnohba6637" class="article-share-link">Share</a>
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-软件开发者路线图-笔记" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2018/05/25/软件开发者路线图-笔记/" class="article-date">
-  <time datetime="2018-05-25T02:05:46.000Z" itemprop="datePublished">2018-05-25</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2018/05/25/软件开发者路线图-笔记/">软件开发者路线图-笔记</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>程序员，作为一个比较自律的技术工种，我是抱着怀疑的态度拿起了这本书——软件开发者都应读的书。工作之余，6天时间此书扫描一遍，此书还是干货不少的。<br>此书并不是一个工具书，按我之前的吐槽就是一行代码就没有，描述了很多模式——不是代码设计的模式，对于初入软件行业、以及从业多年的人都有独到的方式给予建议。<br>此书以工艺的角度把软件从业者分成学徒、熟练工、师傅三个阶段，并着重介绍了作为一位积极向上(财富/技术)的软件学徒阶段各种模式。<br>神奇的是，最终阐述现在我们不应该期望已经有了师傅级的软件工匠。</p>
-<h2 id="空杯心态"><a href="#空杯心态" class="headerlink" title="空杯心态"></a>空杯心态</h2><p>以大师和一个年轻的哲学家的故事阐明学徒期间的态度，不自满，拥抱与众不同的奇异想法，自己才能吸取更多。<br>空杯是把杯子做大，并持之以恒的填充各种含有H20的液体。</p>
-<h3 id="白色腰带"><a href="#白色腰带" class="headerlink" title="白色腰带"></a>白色腰带</h3><p>勇于放下技术包袱，系上白色腰带，努力学习学的知识。</p>
-<h3 id="暴露无知"><a href="#暴露无知" class="headerlink" title="暴露无知"></a>暴露无知</h3><p>每个人都有自己的擅长的领域，暴露无知并正视无知，可以让团队更加有效率的运行，同时来自团队的压力更能让你加速学习此技术的动力。</p>
-<h3 id="以退为进"><a href="#以退为进" class="headerlink" title="以退为进"></a>以退为进</h3><blockquote>
-<p>“众里寻他千百度，蓦然回首，那人却在灯火阑珊处。”眼着你蓦然回首时发现的模式向前推进，有时你就能想出新的东西了。 ——Robert Pirsig 《Zen and the Art if Motorcycle Maintenance》</p>
-</blockquote>
-<p>没有相对应的技术储备，贸然迎难而上，头铁并不是一个好的选择，退到一个安全暴露无知、向同道中人寻求指导会大幅度的规避危险。</p>
-<h2 id="走过漫漫长路"><a href="#走过漫漫长路" class="headerlink" title="走过漫漫长路"></a>走过漫漫长路</h2><blockquote>
-<p>要在编程方面真正擅长需要医生的努力，还有不断学习实践的进取心。——Ron Jeffries等，《Extreme Programming Installed》</p>
-</blockquote>
-<p>长路漫漫，如何坚持也许你能在这里找到答案</p>
-<h3 id="坚守阵地"><a href="#坚守阵地" class="headerlink" title="坚守阵地"></a>坚守阵地</h3><p>相对于管理，有些人更愿意在技术岗位了释放激情。</p>
-<h2 id="准确的自我评估"><a href="#准确的自我评估" class="headerlink" title="准确的自我评估"></a>准确的自我评估</h2><ul>
-<li>不要因为超过周围圈子的平均水平或者达到顶级水平，不要放弃释放激情。</li>
-<li>采用只求最差在团队中不断打磨自己的技术；</li>
-<li>达者可为师，找人指导来加速自己的成长；</li>
-<li>同道中人、密切交往来人互通技术</li>
-</ul>
-<h2 id="恒久学习"><a href="#恒久学习" class="headerlink" title="恒久学习"></a>恒久学习</h2><blockquote>
-<p>如果我们放纵自己，我们将总是需要等待一些消遣或其他事情结束才能安心工作。只有那些对知识非常苛求，以至于在不利的环境下扔你能坚持探索的人才能取得更大的成就，从来就没有什么“有利条件”。——C.S.Lewis, “Learning in War-Time”，”The Weight of Glory”</p>
-</blockquote>
-<p>技术工种不断学习是基本的要求</p>
-<h3 id="分享所学"><a href="#分享所学" class="headerlink" title="分享所学"></a>分享所学</h3><p>分享不会让你知识减少，会加速开发想法的交流，能够发现自己知识的漏洞，锤炼自己的技术以及刷新自己的技术评价。</p>
-<h3 id="建立馈路"><a href="#建立馈路" class="headerlink" title="建立馈路"></a>建立馈路</h3><p>客观高效的反馈，得到设计产品的质量，能够分析自身的能力。</p>
-<h2 id="安排你的课程"><a href="#安排你的课程" class="headerlink" title="安排你的课程"></a>安排你的课程</h2><p>合理的安排课程，我们才能更高效的学习</p>
-<h3 id="阅读列表"><a href="#阅读列表" class="headerlink" title="阅读列表"></a>阅读列表</h3><p>阅读列表能帮助我们查看自己学过什么，并对自己技术分类，对下一步安排有参考。分享他、查看别人的分享能够给予所有处于迷茫期的人帮助。</p>
-<h3 id="坚持阅读"><a href="#坚持阅读" class="headerlink" title="坚持阅读"></a>坚持阅读</h3><ul>
-<li>不积跬步无以至千里</li>
-<li>一本整体概念阐述的书籍远比几个技术摘要重要。</li>
-</ul>
-<h3 id="钻研名著"><a href="#钻研名著" class="headerlink" title="钻研名著"></a>钻研名著</h3><p>只读读最优质的书，经典永不过时</p>
-<h3 id="深入挖掘"><a href="#深入挖掘" class="headerlink" title="深入挖掘"></a>深入挖掘</h3><p>深入挖掘了解原理，才能更加高效的开发，以及和靠巧合编程的人区分开来。</p>
-<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>一篇博客下来，作为沉默寡言的程序员，原来自己文字表达能力更废。</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/05/25/软件开发者路线图-笔记/" data-id="cjjnoakmq0005t4vn7xear70f" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/05/30/书籍目录/" data-id="cjk230d060002iovnrlnv7vaz" class="article-share-link">Share</a>
       
       
     </footer>
@@ -719,6 +696,11 @@
 
   
 
+
+  <nav id="page-nav">
+    
+    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="extend next" rel="next" href="/page/2/">Next &raquo;</a>
+  </nav>
 
 </section>
         
@@ -749,6 +731,10 @@
       <ul>
         
           <li>
+            <a href="/2018/07/26/玩家定时器模块的设计与实现/">玩家定时器模块的设计与实现</a>
+          </li>
+        
+          <li>
             <a href="/2018/07/16/游戏任务系统的设计(上)/">游戏任务系统的设计(上</a>
           </li>
         
@@ -762,10 +748,6 @@
         
           <li>
             <a href="/2018/06/25/NodeJS公会服的设计思路/">NodeJS公会服的设计思路</a>
-          </li>
-        
-          <li>
-            <a href="/2018/06/20/NodeJS基于Redis广播服的设计思路/">NodeJS基于Redis广播服的设计思路</a>
           </li>
         
       </ul>
