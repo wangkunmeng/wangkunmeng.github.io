@@ -65,6 +65,129 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-调试九法-笔记" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/06/04/调试九法-笔记/" class="article-date">
+  <time datetime="2018-06-04T01:41:55.000Z" itemprop="datePublished">2018-06-04</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/06/04/调试九法-笔记/">调试九法-笔记</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>软件开发者路线图看完以后，我开启了接下来的读书之路。一周时间准确的说是6天终于拿下这个山头。<br>废话不多说，这本书是一本从事编程行业一本经典书籍————依然不是一本工具书。它能指导我们如何快速的查找工作中的BUG，并把调试的规格简明扼要外加故事的手段归纳为九条规则。</p>
+<h2 id="规则1-理解系统"><a href="#规则1-理解系统" class="headerlink" title="规则1 理解系统"></a>规则1 理解系统</h2><p>通过阅读手册或者其它方式理解系统，能使我们避免很多低级的错误，并能对一些问题有一定的处理方式，以及帮助我们能更好的使用系统。<br>此规则又分为以下几个要点:</p>
+<ul>
+<li>阅读手册</li>
+<li>仔细阅读每个细节</li>
+<li>掌握基础知识</li>
+<li>了解工作流程</li>
+<li>了解工具</li>
+<li>查阅细节</li>
+</ul>
+<h2 id="规则2-制造失败"><a href="#规则2-制造失败" class="headerlink" title="规则2 制造失败"></a>规则2 制造失败</h2><blockquote>
+<p>“什么也比不上直接去的的证据来得重要。”————福尔摩斯，《血色的研究》</p>
+</blockquote>
+<p>制造失败，能使我们观察错误，并专心的排查失败的原因，以及作为是否修复问题的依据。<br>此规则又分为以下几个要点:</p>
+<ul>
+<li>制造失败</li>
+<li>从头开始</li>
+<li>引发失败</li>
+<li>不模拟失败</li>
+<li>查找不受控制的条件</li>
+<li>仔细观察失败</li>
+<li>不过于相信统计数据</li>
+<li>不怀疑BUG发生的触发点</li>
+<li>保存好已经使用的调试工具</li>
+</ul>
+<h2 id="规则3-不要想，而要看"><a href="#规则3-不要想，而要看" class="headerlink" title="规则3 不要想，而要看"></a>规则3 不要想，而要看</h2><blockquote>
+<p>亲眼看到底层的失败是非常重要的。如果你猜测失败是如何发生的，那常常会修复一些根不是BUG的问题。这样的修复不仅不会解决问题，而且还会浪费时间和金钱，甚至会破坏其他地方。请记住，不要这样做。————选自本书</p>
+</blockquote>
+<p>此规则又分为以下几个要点:</p>
+<ul>
+<li>观察失败</li>
+<li>查看细节</li>
+<li>对系统进行插装</li>
+<li>注意汉森堡不准原则</li>
+<li>勇于猜想，丹猜想只是为了确定搜索的重要目标</li>
+</ul>
+<h2 id="规则4-分而治之"><a href="#规则4-分而治之" class="headerlink" title="规则4 分而治之"></a>规则4 分而治之</h2><p>把问题分割处理，有力于快速定位失败产生的原因，节约时间。有序序列的二分法和顺序查找的效率对比。<br>此规则又分为以下几个要点:</p>
+<ul>
+<li>确定问题的查找范围</li>
+<li>逐步缩小搜索范围</li>
+<li>确定搜索范围内问题区域</li>
+<li>使用易于查看的测试模式</li>
+<li>从有问题的一端开始搜索</li>
+<li>修复已经发现的BUG</li>
+<li>首先消除特定类型的BUG</li>
+</ul>
+<h2 id="规则5-一次只改一个地方"><a href="#规则5-一次只改一个地方" class="headerlink" title="规则5 一次只改一个地方"></a>规则5 一次只改一个地方</h2><p>每次修改，只应修复和此次失败相关的部分。对于有代码重构症的人要忍住自己双手去修改BUG，完全遵守此规则很难，不过也有失之东隅收之桑榆。<br>此规则又分为以下几个要点:</p>
+<ul>
+<li>隔离关键因素</li>
+<li>明确问题点前不急于修改系统</li>
+<li>一次只改一个测试</li>
+<li>对比正常系统</li>
+<li>记录所作修改的问题点</li>
+</ul>
+<h2 id="规则6-保持审计跟踪"><a href="#规则6-保持审计跟踪" class="headerlink" title="规则6 保持审计跟踪"></a>规则6 保持审计跟踪</h2><p>对每次测试的条件和结果做记录和分类，有时会起到意想不到的效果。<br>此规则又分为以下几个要点:</p>
+<ul>
+<li>记录测试操作的流程、结果</li>
+<li>关注细节</li>
+<li>事件记录关联到一起</li>
+<li>利用设计的审计跟踪</li>
+<li>把事情记录下来</li>
+</ul>
+<h2 id="规则7-检查插头"><a href="#规则7-检查插头" class="headerlink" title="规则7 检查插头"></a>规则7 检查插头</h2><blockquote>
+<p>“没有什么比一个显而易见的事实更能迷惑人了。”————福尔摩斯，《博斯科姆比溪谷秘案》</p>
+</blockquote>
+<p>显而易见的错误，往往灯下黑。<br>此规则又分为以下几个要点:</p>
+<ul>
+<li>质疑自己的假设</li>
+<li>从头开始检查</li>
+<li>对工具进行测试</li>
+</ul>
+<h2 id="规则8-获得全新观点"><a href="#规则8-获得全新观点" class="headerlink" title="规则8 获得全新观点"></a>规则8 获得全新观点</h2><p>一人计短两人技长，我们可以从其他人那边获取新的观点。<br>此规则又分为以下几个要点:</p>
+<ul>
+<li>帮助无处不在</li>
+<li>放下面子</li>
+<li>主动征求别人的意见</li>
+<li>报告症状，不要夹杂自己主观观点</li>
+<li>不缺的的判断，可以作为补充</li>
+</ul>
+<h2 id="规则9-如果不修复BUG，它将依然存在"><a href="#规则9-如果不修复BUG，它将依然存在" class="headerlink" title="规则9 如果不修复BUG，它将依然存在"></a>规则9 如果不修复BUG，它将依然存在</h2><p>我们的目标是解决BUG，而不是掩盖BUG。不明确BUG产生的原因，巧合的方式BUG被掩盖，BUG依然存在，会被再次触发。<br>此规则又分为以下几个要点:</p>
+<ul>
+<li>检查问题是够被修复</li>
+<li>查证自己的修改</li>
+<li>明确BUG从来不会自己消失</li>
+<li>从根本上解决问题</li>
+<li>对过程进行修复</li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2018/06/04/调试九法-笔记/" data-id="cjkrndnmb000cscvn0v9dlgyp" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-学习计划" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2018/05/30/学习计划/" class="article-date">
@@ -94,7 +217,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/05/30/学习计划/" data-id="cjkhnhqpe0006xcvns8jri4dz" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/05/30/学习计划/" data-id="cjkrndnm60008scvnqck6r3ec" class="article-share-link">Share</a>
       
       
     </footer>
@@ -146,7 +269,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/05/30/书籍目录/" data-id="cjkhnhqoq0000xcvnnxjuig74" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/05/30/书籍目录/" data-id="cjkrndnls0000scvn6jtnepya" class="article-share-link">Share</a>
       
       
     </footer>
@@ -216,7 +339,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/05/25/软件开发者路线图-笔记/" data-id="cjkhnhqph0009xcvnk481rm63" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/05/25/软件开发者路线图-笔记/" data-id="cjkrndnma000bscvne2qabgl4" class="article-share-link">Share</a>
       
       
     </footer>
@@ -262,6 +385,10 @@
       <ul>
         
           <li>
+            <a href="/2018/08/13/游戏任务系统的设计(下)/">游戏任务系统的设计(下)</a>
+          </li>
+        
+          <li>
             <a href="/2018/08/06/基于RPC的分布式广播服设计思路/">基于RPC的分布式广播服设计思路</a>
           </li>
         
@@ -275,10 +402,6 @@
         
           <li>
             <a href="/2018/07/16/游戏任务系统的设计(上)/">游戏任务系统的设计(上</a>
-          </li>
-        
-          <li>
-            <a href="/2018/07/09/使用消息字典做消息校验/">使用消息字典做消息校验</a>
           </li>
         
       </ul>

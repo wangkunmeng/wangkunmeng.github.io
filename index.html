@@ -65,6 +65,96 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-游戏任务系统的设计(下)" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/08/13/游戏任务系统的设计(下)/" class="article-date">
+  <time datetime="2018-08-13T02:15:37.000Z" itemprop="datePublished">2018-08-13</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/08/13/游戏任务系统的设计(下)/">游戏任务系统的设计(下)</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>刚水好的一篇博客被VSCode吞了，也是够够的，好吧我重来。<br>本打算分享一下这周内做的GRpc的简单封装呢，手里没代码，那就先把任务系统了结吧。</p>
+<h2 id="任务对象"><a href="#任务对象" class="headerlink" title="任务对象"></a>任务对象</h2><p>因为涉及到任务奖励的分发，需要记录奖励的领取状态，落后的社会生产力不能满足人民日益增长的物质文化需求，于是大笔一挥增加了任务奖励的领取状态。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="string">"type"</span> : <span class="number">0</span> <span class="comment">//日常、周常、成就</span></span><br><span class="line">  <span class="string">"mode"</span> : <span class="number">0</span> <span class="comment">//任务具体枚举类型</span></span><br><span class="line">  <span class="string">"cfgId"</span> : <span class="number">0</span> <span class="comment">//对应静态配置ID，用于查询具体</span></span><br><span class="line">  <span class="string">"num"</span> : <span class="number">0</span> <span class="comment">//任务需求数量、名次、等级</span></span><br><span class="line">  <span class="string">"rewardState"</span> : <span class="number">0</span> <span class="comment">//0:未领取，1:已领取</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>状态切换</li>
+</ul>
+<ol>
+<li>任务未完成：任务对象num达到奖励未要求的阈值</li>
+<li>任务已完成：任务对象num达到奖励要求的阈值</li>
+<li>奖励未领取：任务已完成，且rewardState为0</li>
+<li>奖励已领取：任务已完成，且rewardState为1</li>
+</ol>
+<h3 id="奖励发送"><a href="#奖励发送" class="headerlink" title="奖励发送"></a>奖励发送</h3><p>我们采取的是，玩家主动请求任务奖励的方式来领取对应的奖励。</p>
+<ul>
+<li>日常、周常</li>
+</ul>
+<ol>
+<li>奖励未领取状态</li>
+<li>rewardState置为已领取状态</li>
+<li>删除任务对象</li>
+<li>触发ALL型任务</li>
+<li>发送任务奖励</li>
+</ol>
+<ul>
+<li>成就</li>
+</ul>
+<p>成就设计到统计成就点、展示成就完成时间、人前显圣晒的心理，成就领取完奖励就不予删除。</p>
+<ol>
+<li>奖励未领取状态</li>
+<li>rewardState置为已领取状态</li>
+<li>触发ALL型任务</li>
+<li>发送任务奖励</li>
+</ol>
+<h3 id="任务动态增加"><a href="#任务动态增加" class="headerlink" title="任务动态增加"></a>任务动态增加</h3><p>任务不可能一成不变，实现动态增加是一个硬性的需求。</p>
+<ul>
+<li>日常、周常</li>
+</ul>
+<p>日常、周常有刷新时间，只要达到刷新时间清除所有已创建任务对象，重新载入所有任务对象即可。</p>
+<ul>
+<li>成就</li>
+</ul>
+<p>成就因为没有刷新时间，所以需要一定的策略。</p>
+<ol>
+<li>成就ID必须增量增加。</li>
+<li>成就有删减ID不回收。</li>
+<li>线上阶段，ID有删除操作一般禁止，或者做额外策略。</li>
+<li>线上阶段，ID对应任务类型变更禁止。</li>
+<li>任意阶段修改ID对应Num值，允许。</li>
+<li>角色创建，角色身上绑定最大成就ID</li>
+<li>玩家登录，对比自身最大成就ID和当前最大成就ID</li>
+<li>成就有更新，增加(自身最大成就ID, 当前最大成就ID]内所有成就。</li>
+</ol>
+<p>当前成就的策略向应用到日常、周常上也可以。</p>
+<h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h2><p>2个篇幅任务系统总算完结了，也算是一个比较长的一篇博客了，当然项目中的任务系统肯定要比此复杂，但基本样子应该差距不算太大。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2018/08/13/游戏任务系统的设计(下)/" data-id="cjkrndnm40006scvnqxfsdai6" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-基于RPC的分布式广播服设计思路" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2018/08/06/基于RPC的分布式广播服设计思路/" class="article-date">
@@ -159,7 +249,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/08/06/基于RPC的分布式广播服设计思路/" data-id="cjkhnhqp90003xcvnno4u53xy" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/08/06/基于RPC的分布式广播服设计思路/" data-id="cjkrndnm00003scvnsx3ld86x" class="article-share-link">Share</a>
       
       
     </footer>
@@ -218,7 +308,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/07/31/提问的智慧-读书笔记/" data-id="cjkhnhqpf0007xcvnrde8iuzg" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/07/31/提问的智慧-读书笔记/" data-id="cjkrndnm70009scvn3qmpm3vb" class="article-share-link">Share</a>
       
       
     </footer>
@@ -265,7 +355,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/07/26/玩家定时器模块的设计与实现/" data-id="cjkhnhqpl000cxcvny44vjlo0" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/07/26/玩家定时器模块的设计与实现/" data-id="cjkrndnmc000dscvnhmp7dlml" class="article-share-link">Share</a>
       
       
     </footer>
@@ -356,7 +446,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/07/16/游戏任务系统的设计(上)/" data-id="cjkhnhqpi000axcvnyg9rvgka" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/07/16/游戏任务系统的设计(上)/" data-id="cjkrndnm50007scvnb9xqamc6" class="article-share-link">Share</a>
       
       
     </footer>
@@ -411,7 +501,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/07/09/使用消息字典做消息校验/" data-id="cjkhnhqpc0005xcvnkevsyfi8" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/07/09/使用消息字典做消息校验/" data-id="cjkrndnm10004scvnz5kvmown" class="article-share-link">Share</a>
       
       
     </footer>
@@ -458,7 +548,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/07/02/基于json格式的玩家数据兼容/" data-id="cjkhnhqpb0004xcvnvxzdc74t" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/07/02/基于json格式的玩家数据兼容/" data-id="cjkrndnm8000ascvnszflabr9" class="article-share-link">Share</a>
       
       
     </footer>
@@ -529,7 +619,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/06/25/NodeJS公会服的设计思路/" data-id="cjkhnhqp80002xcvn67m2lydb" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/06/25/NodeJS公会服的设计思路/" data-id="cjkrndnlz0002scvnnssbr41f" class="article-share-link">Share</a>
       
       
     </footer>
@@ -584,7 +674,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/06/20/NodeJS基于Redis广播服的设计思路/" data-id="cjkhnhqov0001xcvni06tzekz" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/06/20/NodeJS基于Redis广播服的设计思路/" data-id="cjkrndnlx0001scvnmdy7a05z" class="article-share-link">Share</a>
       
       
     </footer>
@@ -634,130 +724,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/06/14/基于Json的数据同步/" data-id="cjkhnhqpg0008xcvnbhxin36d" class="article-share-link">Share</a>
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-调试九法-笔记" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2018/06/04/调试九法-笔记/" class="article-date">
-  <time datetime="2018-06-04T01:41:55.000Z" itemprop="datePublished">2018-06-04</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2018/06/04/调试九法-笔记/">调试九法-笔记</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>软件开发者路线图看完以后，我开启了接下来的读书之路。一周时间准确的说是6天终于拿下这个山头。<br>废话不多说，这本书是一本从事编程行业一本经典书籍————依然不是一本工具书。它能指导我们如何快速的查找工作中的BUG，并把调试的规格简明扼要外加故事的手段归纳为九条规则。</p>
-<h2 id="规则1-理解系统"><a href="#规则1-理解系统" class="headerlink" title="规则1 理解系统"></a>规则1 理解系统</h2><p>通过阅读手册或者其它方式理解系统，能使我们避免很多低级的错误，并能对一些问题有一定的处理方式，以及帮助我们能更好的使用系统。<br>此规则又分为以下几个要点:</p>
-<ul>
-<li>阅读手册</li>
-<li>仔细阅读每个细节</li>
-<li>掌握基础知识</li>
-<li>了解工作流程</li>
-<li>了解工具</li>
-<li>查阅细节</li>
-</ul>
-<h2 id="规则2-制造失败"><a href="#规则2-制造失败" class="headerlink" title="规则2 制造失败"></a>规则2 制造失败</h2><blockquote>
-<p>“什么也比不上直接去的的证据来得重要。”————福尔摩斯，《血色的研究》</p>
-</blockquote>
-<p>制造失败，能使我们观察错误，并专心的排查失败的原因，以及作为是否修复问题的依据。<br>此规则又分为以下几个要点:</p>
-<ul>
-<li>制造失败</li>
-<li>从头开始</li>
-<li>引发失败</li>
-<li>不模拟失败</li>
-<li>查找不受控制的条件</li>
-<li>仔细观察失败</li>
-<li>不过于相信统计数据</li>
-<li>不怀疑BUG发生的触发点</li>
-<li>保存好已经使用的调试工具</li>
-</ul>
-<h2 id="规则3-不要想，而要看"><a href="#规则3-不要想，而要看" class="headerlink" title="规则3 不要想，而要看"></a>规则3 不要想，而要看</h2><blockquote>
-<p>亲眼看到底层的失败是非常重要的。如果你猜测失败是如何发生的，那常常会修复一些根不是BUG的问题。这样的修复不仅不会解决问题，而且还会浪费时间和金钱，甚至会破坏其他地方。请记住，不要这样做。————选自本书</p>
-</blockquote>
-<p>此规则又分为以下几个要点:</p>
-<ul>
-<li>观察失败</li>
-<li>查看细节</li>
-<li>对系统进行插装</li>
-<li>注意汉森堡不准原则</li>
-<li>勇于猜想，丹猜想只是为了确定搜索的重要目标</li>
-</ul>
-<h2 id="规则4-分而治之"><a href="#规则4-分而治之" class="headerlink" title="规则4 分而治之"></a>规则4 分而治之</h2><p>把问题分割处理，有力于快速定位失败产生的原因，节约时间。有序序列的二分法和顺序查找的效率对比。<br>此规则又分为以下几个要点:</p>
-<ul>
-<li>确定问题的查找范围</li>
-<li>逐步缩小搜索范围</li>
-<li>确定搜索范围内问题区域</li>
-<li>使用易于查看的测试模式</li>
-<li>从有问题的一端开始搜索</li>
-<li>修复已经发现的BUG</li>
-<li>首先消除特定类型的BUG</li>
-</ul>
-<h2 id="规则5-一次只改一个地方"><a href="#规则5-一次只改一个地方" class="headerlink" title="规则5 一次只改一个地方"></a>规则5 一次只改一个地方</h2><p>每次修改，只应修复和此次失败相关的部分。对于有代码重构症的人要忍住自己双手去修改BUG，完全遵守此规则很难，不过也有失之东隅收之桑榆。<br>此规则又分为以下几个要点:</p>
-<ul>
-<li>隔离关键因素</li>
-<li>明确问题点前不急于修改系统</li>
-<li>一次只改一个测试</li>
-<li>对比正常系统</li>
-<li>记录所作修改的问题点</li>
-</ul>
-<h2 id="规则6-保持审计跟踪"><a href="#规则6-保持审计跟踪" class="headerlink" title="规则6 保持审计跟踪"></a>规则6 保持审计跟踪</h2><p>对每次测试的条件和结果做记录和分类，有时会起到意想不到的效果。<br>此规则又分为以下几个要点:</p>
-<ul>
-<li>记录测试操作的流程、结果</li>
-<li>关注细节</li>
-<li>事件记录关联到一起</li>
-<li>利用设计的审计跟踪</li>
-<li>把事情记录下来</li>
-</ul>
-<h2 id="规则7-检查插头"><a href="#规则7-检查插头" class="headerlink" title="规则7 检查插头"></a>规则7 检查插头</h2><blockquote>
-<p>“没有什么比一个显而易见的事实更能迷惑人了。”————福尔摩斯，《博斯科姆比溪谷秘案》</p>
-</blockquote>
-<p>显而易见的错误，往往灯下黑。<br>此规则又分为以下几个要点:</p>
-<ul>
-<li>质疑自己的假设</li>
-<li>从头开始检查</li>
-<li>对工具进行测试</li>
-</ul>
-<h2 id="规则8-获得全新观点"><a href="#规则8-获得全新观点" class="headerlink" title="规则8 获得全新观点"></a>规则8 获得全新观点</h2><p>一人计短两人技长，我们可以从其他人那边获取新的观点。<br>此规则又分为以下几个要点:</p>
-<ul>
-<li>帮助无处不在</li>
-<li>放下面子</li>
-<li>主动征求别人的意见</li>
-<li>报告症状，不要夹杂自己主观观点</li>
-<li>不缺的的判断，可以作为补充</li>
-</ul>
-<h2 id="规则9-如果不修复BUG，它将依然存在"><a href="#规则9-如果不修复BUG，它将依然存在" class="headerlink" title="规则9 如果不修复BUG，它将依然存在"></a>规则9 如果不修复BUG，它将依然存在</h2><p>我们的目标是解决BUG，而不是掩盖BUG。不明确BUG产生的原因，巧合的方式BUG被掩盖，BUG依然存在，会被再次触发。<br>此规则又分为以下几个要点:</p>
-<ul>
-<li>检查问题是够被修复</li>
-<li>查证自己的修改</li>
-<li>明确BUG从来不会自己消失</li>
-<li>从根本上解决问题</li>
-<li>对过程进行修复</li>
-</ul>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/06/04/调试九法-笔记/" data-id="cjkhnhqpk000bxcvn5sf4n3uf" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/06/14/基于Json的数据同步/" data-id="cjkrndnm20005scvn6z5iomte" class="article-share-link">Share</a>
       
       
     </footer>
@@ -803,6 +770,10 @@
       <ul>
         
           <li>
+            <a href="/2018/08/13/游戏任务系统的设计(下)/">游戏任务系统的设计(下)</a>
+          </li>
+        
+          <li>
             <a href="/2018/08/06/基于RPC的分布式广播服设计思路/">基于RPC的分布式广播服设计思路</a>
           </li>
         
@@ -816,10 +787,6 @@
         
           <li>
             <a href="/2018/07/16/游戏任务系统的设计(上)/">游戏任务系统的设计(上</a>
-          </li>
-        
-          <li>
-            <a href="/2018/07/09/使用消息字典做消息校验/">使用消息字典做消息校验</a>
           </li>
         
       </ul>
