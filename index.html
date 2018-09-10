@@ -65,6 +65,89 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-广播服压测总结" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/09/10/广播服压测总结/" class="article-date">
+  <time datetime="2018-09-10T02:24:50.000Z" itemprop="datePublished">2018-09-10</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/09/10/广播服压测总结/">广播服压测总结</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>游戏即将上线，本周对广播服进行压力测试，不断调整代码，最终达成了单进程2000人的目标。一些注意事项和大家分享下。</p>
+<h2 id="服务端策略"><a href="#服务端策略" class="headerlink" title="服务端策略"></a>服务端策略</h2><h3 id="采用集群方式，单进程连接数量控制在2000人"><a href="#采用集群方式，单进程连接数量控制在2000人" class="headerlink" title="采用集群方式，单进程连接数量控制在2000人"></a>采用集群方式，单进程连接数量控制在2000人</h3><ol>
+<li><p>获取连接数量</p>
+ <figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wss.clients.size;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>当连接数达到2000人时，服务端断开客户端并返回错误码。</p>
+ <figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wsClient.close(<span class="number">1008</span>, <span class="string">'connector num max'</span>);</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>连接但5秒内不完成登录验证的客户端要关闭</p>
+</li>
+</ol>
+<h3 id="同一个频道玩家集中在同一个进程"><a href="#同一个频道玩家集中在同一个进程" class="headerlink" title="同一个频道玩家集中在同一个进程"></a>同一个频道玩家集中在同一个进程</h3><ol>
+<li>连接端口作为数组返回给客户端</li>
+<li>客户端从第一个端口轮询请求可以连接的服务端，直到连接成功。</li>
+</ol>
+<p>减少RPC操作，提升通信效率，虽然策略有点低级。</p>
+<h3 id="广播相关"><a href="#广播相关" class="headerlink" title="广播相关"></a>广播相关</h3><ol>
+<li>消息广播区域分级，频道内、进程内，当前服，所有服</li>
+<li>不同广播区域需要不同的权限，所有服不对客户端开放。</li>
+<li>不同广播区域的消息冷却时间不同。</li>
+</ol>
+<h3 id="消息相关"><a href="#消息相关" class="headerlink" title="消息相关"></a>消息相关</h3><ol>
+<li>精简消息内容，删除消息内无用数据，尤其优化通讯频繁的消息。</li>
+<li>心跳时间频率适当降低，调整为10秒一次。</li>
+<li>心跳信息不打印。</li>
+</ol>
+<h3 id="日志"><a href="#日志" class="headerlink" title="日志"></a>日志</h3><ol>
+<li>打印接收的消息</li>
+<li>打印一些重要日志</li>
+<li>不打印发送给客户端的消息</li>
+</ol>
+<p>适当降低日志，能提升服务端承载能力。</p>
+<h2 id="机器人策略"><a href="#机器人策略" class="headerlink" title="机器人策略"></a>机器人策略</h2><ol>
+<li>每0.5s创建一个机器人进程</li>
+<li>登录聊天服务器</li>
+<li>10s一次心跳</li>
+<li>30s一次玩家状态同步</li>
+<li>35s一次世界聊天(频道内200人广播)</li>
+<li>90s一次随机推荐好友(进程内随机)</li>
+<li>120s一次房间招人(当前进程内所有人广播)</li>
+<li>聊天关闭则从步骤2重新开始</li>
+</ol>
+<h2 id="测试策略"><a href="#测试策略" class="headerlink" title="测试策略"></a>测试策略</h2><ol>
+<li>采用和线上同样的环境测试。</li>
+<li>短期测试可按小时、天来申请服务器测试。</li>
+<li>受网络限制，测试机器人和服务器之间内网通信。</li>
+</ol>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2018/09/10/广播服压测总结/" data-id="cjlvo0oq200064svnqt5svf97" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-游戏任务系统的设计(下)" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2018/08/13/游戏任务系统的设计(下)/" class="article-date">
@@ -145,7 +228,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/08/13/游戏任务系统的设计(下)/" data-id="cjkrndnm40006scvnqxfsdai6" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/08/13/游戏任务系统的设计(下)/" data-id="cjlvo0oq6000a4svnsck5c524" class="article-share-link">Share</a>
       
       
     </footer>
@@ -249,7 +332,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/08/06/基于RPC的分布式广播服设计思路/" data-id="cjkrndnm00003scvnsx3ld86x" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/08/06/基于RPC的分布式广播服设计思路/" data-id="cjlvo0opz00034svn5s0esxkp" class="article-share-link">Share</a>
       
       
     </footer>
@@ -308,7 +391,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/07/31/提问的智慧-读书笔记/" data-id="cjkrndnm70009scvn3qmpm3vb" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/07/31/提问的智慧-读书笔记/" data-id="cjlvo0oq400084svny3k6eem1" class="article-share-link">Share</a>
       
       
     </footer>
@@ -355,7 +438,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/07/26/玩家定时器模块的设计与实现/" data-id="cjkrndnmc000dscvnhmp7dlml" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/07/26/玩家定时器模块的设计与实现/" data-id="cjlvo0oq9000c4svnwa1zldyh" class="article-share-link">Share</a>
       
       
     </footer>
@@ -446,7 +529,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/07/16/游戏任务系统的设计(上)/" data-id="cjkrndnm50007scvnb9xqamc6" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/07/16/游戏任务系统的设计(上)/" data-id="cjlvo0oq7000b4svn1wwuhq3x" class="article-share-link">Share</a>
       
       
     </footer>
@@ -501,7 +584,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/07/09/使用消息字典做消息校验/" data-id="cjkrndnm10004scvnz5kvmown" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/07/09/使用消息字典做消息校验/" data-id="cjlvo0oq000044svnk6phk1j4" class="article-share-link">Share</a>
       
       
     </footer>
@@ -548,7 +631,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/07/02/基于json格式的玩家数据兼容/" data-id="cjkrndnm8000ascvnszflabr9" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/07/02/基于json格式的玩家数据兼容/" data-id="cjlvo0oq300074svn2aqs338d" class="article-share-link">Share</a>
       
       
     </footer>
@@ -619,7 +702,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/06/25/NodeJS公会服的设计思路/" data-id="cjkrndnlz0002scvnnssbr41f" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/06/25/NodeJS公会服的设计思路/" data-id="cjlvo0opx00024svnm9sftk47" class="article-share-link">Share</a>
       
       
     </footer>
@@ -674,57 +757,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/06/20/NodeJS基于Redis广播服的设计思路/" data-id="cjkrndnlx0001scvnmdy7a05z" class="article-share-link">Share</a>
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-基于Json的数据同步" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2018/06/14/基于Json的数据同步/" class="article-date">
-  <time datetime="2018-06-14T02:22:54.000Z" itemprop="datePublished">2018-06-14</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2018/06/14/基于Json的数据同步/">基于Json的数据同步</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>游戏服务器与客户端的数据同步，各家有各家的秘籍。下面我就分享一下http服务器和客户端基于JSON文件的数据同步的思路。</p>
-<h2 id="何时同步"><a href="#何时同步" class="headerlink" title="何时同步"></a>何时同步</h2><p>http短连接，就是每次返回客户端消息时，包同步数据带回去。同步数据放到消息返回前。</p>
-<h2 id="Json文件制作和格式剖析"><a href="#Json文件制作和格式剖析" class="headerlink" title="Json文件制作和格式剖析"></a>Json文件制作和格式剖析</h2><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">card.json</span><br><span class="line">&#123;</span><br><span class="line">    TagName: card //此为json标识，前后端解析识别</span><br><span class="line">    keys: [ //keys为Json具体数据键值</span><br><span class="line">        &#123;</span><br><span class="line">            keyName: 'GUID',</span><br><span class="line">            comment: '唯一ID', //同步数据时用户标识此OBj，全局唯一</span><br><span class="line">            type: 'String',</span><br><span class="line">            value: ''</span><br><span class="line">        &#125;,</span><br><span class="line">        &#123;</span><br><span class="line">            keyName: 'uid', </span><br><span class="line">            comment: '玩家UID', //基本说明，利于维护</span><br><span class="line">            type: 'Number', //数据类型，可做基本校验</span><br><span class="line">            value: 10000, //初始数据默认值,</span><br><span class="line">        &#125;,</span><br><span class="line">        &#123;</span><br><span class="line">            keyName: 'level',</span><br><span class="line">            comment: '等级',</span><br><span class="line">            type: 'Number',</span><br><span class="line">            value: 0</span><br><span class="line">        &#125;,</span><br><span class="line">        &#123;</span><br><span class="line">            keyName: 'ctSkin',</span><br><span class="line">            comment: '皮肤',</span><br><span class="line">            type: 'Array',</span><br><span class="line">            value: []</span><br><span class="line">        &#125;</span><br><span class="line">    ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h2 id="Json文件设计对应Obj格式"><a href="#Json文件设计对应Obj格式" class="headerlink" title="Json文件设计对应Obj格式"></a>Json文件设计对应Obj格式</h2><p>简单描述下，JSON文件对应的Obj对象怎么设计</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    tagName: card, <span class="comment">//obj对应JSON文件名字</span></span><br><span class="line">    keyIndex: &#123; <span class="comment">//同步时需要记录变更的数据位置，比直接传keyName要好</span></span><br><span class="line">        GUID:<span class="number">0</span>,</span><br><span class="line">        uid：<span class="number">1</span>,</span><br><span class="line">        level: <span class="number">2</span>,</span><br><span class="line">        ctSkin: <span class="number">3</span>,</span><br><span class="line">    &#125;,</span><br><span class="line">    keyValue: [<span class="string">'10001@10000'</span>, <span class="number">10000</span>,  <span class="number">5</span>, []] <span class="comment">//本地保存，此OBj所有数据</span></span><br><span class="line">    changeKeys: [<span class="number">2</span>] <span class="comment">//变更了那些Key</span></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">syncChangeToClient</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="comment">//简单的算法对应完毕</span></span><br><span class="line">        [变更的<span class="built_in">JSON</span>原型对应怎么解析，[[变更的位置，变更后数据格式]，[变更的位置，变更后数据格式]]，全局索引GUID（用来和多个卡牌做区分）]</span><br><span class="line">        <span class="comment">//卡牌'10001@10000'索引的对象，数据1位置变更为10</span></span><br><span class="line">        <span class="keyword">return</span> [<span class="string">'card'</span>, [[<span class="number">1</span>, <span class="number">10</span>]], <span class="string">'10001@10000'</span>],</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">syncToClient</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="comment">//简单的算法对应完毕</span></span><br><span class="line">        [<span class="built_in">JSON</span>原型名字，[当前所有数据]]</span><br><span class="line">        <span class="keyword">return</span> [<span class="string">'card'</span>, [<span class="string">'10001@10000'</span>, <span class="number">10000</span>,  <span class="number">5</span>, []]],</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h2 id="同步的类型"><a href="#同步的类型" class="headerlink" title="同步的类型"></a>同步的类型</h2><p>同步需要只要需要3个数据表示出，增加[1]、删除[2]、更新[3]</p>
-<h3 id="增加"><a href="#增加" class="headerlink" title="增加"></a>增加</h3><p>这种增加，一般都是把新生成Obj全部同步给客户端。<br>eg:</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="number">1</span>:[ <span class="comment">//数组，为了支持一次同步所有增加、删除、更新</span></span><br><span class="line">        obj.syncToClient();<span class="comment">//每一个增加的对象</span></span><br><span class="line">        obj.syncToClient();<span class="comment">//每一个增加的对象</span></span><br><span class="line">        ...</span><br><span class="line">    ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="删除"><a href="#删除" class="headerlink" title="删除"></a>删除</h3><p>删除Obj一般只需要提供tagName外加GUID即可<br>eg:</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="number">2</span>:[ <span class="comment">//数组，为了支持一次同步所有增加、删除、更新</span></span><br><span class="line">        [</span><br><span class="line">            card，<span class="string">'10001@10000'</span></span><br><span class="line">        ],</span><br><span class="line">        ...</span><br><span class="line">    ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="更新"><a href="#更新" class="headerlink" title="更新"></a>更新</h3><p>更新需要提供tagName,GUID,以及每个更新的Key索引和最后的值<br>eg:</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="number">3</span>:[ <span class="comment">//数组，为了支持一次同步所有增加、删除、更新</span></span><br><span class="line">        obj.syncChangeToClient();<span class="comment">//每一个更新的对象</span></span><br><span class="line">        obj.syncChangeToClient();<span class="comment">//每一个更新的对象</span></span><br><span class="line">    ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h2 id="同步的基础规则"><a href="#同步的基础规则" class="headerlink" title="同步的基础规则"></a>同步的基础规则</h2><p>1.更新后删除的,数据不同步更新的字段，只同步删除<br>2.单个Obj多次更新的，每个Key只同步最后值，一次同步完毕<br>3.增加后更新的，只同步增加全部属性<br>4.增加后删除的，不同步数据<br>5.删除又增加的，理论不出现，但要同步增加的数据<br>6.增加、同步、删除各个key内有数据才有，比如只有增加同步只需key1就行,都有的话，就是{1：[]，2：[]，3：[]}<br>7.每次同步完毕都要清除本书数据变更状态</p>
-<h1 id="结束语"><a href="#结束语" class="headerlink" title="结束语"></a>结束语</h1><p>思路还是比较乱，设计还是不是很成熟。终究是没有实际代码去验证，自己也很遗憾，等后续有成品东西出来，再接着验证去分享。</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/06/14/基于Json的数据同步/" data-id="cjkrndnm20005scvn6z5iomte" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2018/06/20/NodeJS基于Redis广播服的设计思路/" data-id="cjlvo0opq00004svnmmm8hgkk" class="article-share-link">Share</a>
       
       
     </footer>
@@ -757,7 +790,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">August 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">July 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">June 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">May 2018</a></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/09/">September 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">August 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">July 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">June 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">May 2018</a></li></ul>
     </div>
   </div>
 
@@ -768,6 +801,10 @@
     <h3 class="widget-title">Recent Posts</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2018/09/10/广播服压测总结/">广播服压测总结</a>
+          </li>
         
           <li>
             <a href="/2018/08/13/游戏任务系统的设计(下)/">游戏任务系统的设计(下)</a>
@@ -783,10 +820,6 @@
         
           <li>
             <a href="/2018/07/26/玩家定时器模块的设计与实现/">玩家定时器模块的设计与实现</a>
-          </li>
-        
-          <li>
-            <a href="/2018/07/16/游戏任务系统的设计(上)/">游戏任务系统的设计(上</a>
           </li>
         
       </ul>
