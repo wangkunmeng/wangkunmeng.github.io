@@ -1,245 +1,349 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="utf-8">
-  
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>NodeJS公会服的设计思路 - Even - A super concise theme for Hugo</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
 
-  
-  <title>NodeJS公会服的设计思路 | wangkm&#39;s blog</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="前言公会是游戏功能中玩家数据交互最为频繁的一个功能，如何让多个玩家操作同一份数据有序而不出错是个很值得非常重要的问题。NodeJS服务器由于无阻塞、单线程、异步、集群的特点使得此功能难点又增加N个百分点，本文分享自己单进程公会服的设计经验。 核心问题 其它服务器和公会服交互 公会服如何承担访问压力 公会玩家基本信息同步问题 同一公会中会长A请求把会员C设为副会长和副会长B把会员C设为大队长，操作如">
-<meta property="og:type" content="article">
-<meta property="og:title" content="NodeJS公会服的设计思路">
-<meta property="og:url" content="http://yoursite.com/2018/06/25/NodeJS公会服的设计思路/index.html">
-<meta property="og:site_name" content="wangkm&#39;s blog">
-<meta property="og:description" content="前言公会是游戏功能中玩家数据交互最为频繁的一个功能，如何让多个玩家操作同一份数据有序而不出错是个很值得非常重要的问题。NodeJS服务器由于无阻塞、单线程、异步、集群的特点使得此功能难点又增加N个百分点，本文分享自己单进程公会服的设计经验。 核心问题 其它服务器和公会服交互 公会服如何承担访问压力 公会玩家基本信息同步问题 同一公会中会长A请求把会员C设为副会长和副会长B把会员C设为大队长，操作如">
-<meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2018-06-25T05:57:23.526Z">
-<meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="NodeJS公会服的设计思路">
-<meta name="twitter:description" content="前言公会是游戏功能中玩家数据交互最为频繁的一个功能，如何让多个玩家操作同一份数据有序而不出错是个很值得非常重要的问题。NodeJS服务器由于无阻塞、单线程、异步、集群的特点使得此功能难点又增加N个百分点，本文分享自己单进程公会服的设计经验。 核心问题 其它服务器和公会服交互 公会服如何承担访问压力 公会玩家基本信息同步问题 同一公会中会长A请求把会员C设为副会长和副会长B把会员C设为大队长，操作如">
-  
-    <link rel="alternate" href="/atom.xml" title="wangkm&#39;s blog" type="application/atom+xml">
-  
-  
-    <link rel="icon" href="/favicon.png">
-  
-  
-    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
-  
-  <link rel="stylesheet" href="/css/style.css">
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="wangkm" />
+  <meta name="description" content="前言 公会是游戏功能中玩家数据交互最为频繁的一个功能，如何让多个玩家操作同一份数据有序而不出错是个很值得非常重要的问题。NodeJS服务器由于" />
+
+  <meta name="keywords" content="Node, wangkunmeng, 服务器" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.48" />
+
+
+<link rel="canonical" href="https://wangkunmeng.github.io/2018/06/25/NodeJS%E5%85%AC%E4%BC%9A%E6%9C%8D%E7%9A%84%E8%AE%BE%E8%AE%A1%E6%80%9D%E8%B7%AF/" />
+
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+
+
+
+
+<link href="/dist/even.min.css?v=3.2.0" rel="stylesheet">
+<link href="/lib/fancybox/jquery.fancybox-3.1.20.min.css" rel="stylesheet">
+
+
+
+
+<meta property="og:title" content="NodeJS公会服的设计思路" />
+<meta property="og:description" content="前言 公会是游戏功能中玩家数据交互最为频繁的一个功能，如何让多个玩家操作同一份数据有序而不出错是个很值得非常重要的问题。NodeJS服务器由于" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://wangkunmeng.github.io/2018/06/25/NodeJS%E5%85%AC%E4%BC%9A%E6%9C%8D%E7%9A%84%E8%AE%BE%E8%AE%A1%E6%80%9D%E8%B7%AF/" /><meta property="article:published_time" content="2018-06-25T09:55:34&#43;00:00"/>
+<meta property="article:modified_time" content="2018-06-25T09:55:34&#43;00:00"/>
+<meta itemprop="name" content="NodeJS公会服的设计思路">
+<meta itemprop="description" content="前言 公会是游戏功能中玩家数据交互最为频繁的一个功能，如何让多个玩家操作同一份数据有序而不出错是个很值得非常重要的问题。NodeJS服务器由于">
+
+
+<meta itemprop="datePublished" content="2018-06-25T09:55:34&#43;00:00" />
+<meta itemprop="dateModified" content="2018-06-25T09:55:34&#43;00:00" />
+<meta itemprop="wordCount" content="1146">
+
+
+
+<meta itemprop="keywords" content="" />
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="NodeJS公会服的设计思路"/>
+<meta name="twitter:description" content="前言 公会是游戏功能中玩家数据交互最为频繁的一个功能，如何让多个玩家操作同一份数据有序而不出错是个很值得非常重要的问题。NodeJS服务器由于"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
 </head>
-
 <body>
-  <div id="container">
-    <div id="wrap">
-      <header id="header">
-  <div id="banner"></div>
-  <div id="header-outer" class="outer">
-    <div id="header-title" class="inner">
-      <h1 id="logo-wrap">
-        <a href="/" id="logo">wangkm&#39;s blog</a>
-      </h1>
-      
-    </div>
-    <div id="header-inner" class="inner">
-      <nav id="main-nav">
-        <a id="main-nav-toggle" class="nav-icon"></a>
-        
-          <a class="main-nav-link" href="/">Home</a>
-        
-          <a class="main-nav-link" href="/archives">Archives</a>
-        
-      </nav>
-      <nav id="sub-nav">
-        
-          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
-        
-        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
-      </nav>
-      <div id="search-form-wrap">
-        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
-      </div>
-    </div>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">wangkm&#39;s blog</a>
   </div>
-</header>
-      <div class="outer">
-        <section id="main"><article id="post-NodeJS公会服的设计思路" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2018/06/25/NodeJS公会服的设计思路/" class="article-date">
-  <time datetime="2018-06-25T01:55:34.000Z" itemprop="datePublished">2018-06-25</time>
-</a>
-    
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
   </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 class="article-title" itemprop="name">
-      NodeJS公会服的设计思路
-    </h1>
-  
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <a href="/">
+        <li class="mobile-menu-item">Home</li>
+      </a><a href="/post/">
+        <li class="mobile-menu-item">Archives</li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">Tags</li>
+      </a><a href="/categories/">
+        <li class="mobile-menu-item">Categories</li>
+      </a>
+  </ul>
+</nav>
+  <div class="container" id="mobile-panel">
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">wangkm&#39;s blog</a>
+</div>
 
-      </header>
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">Home</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/post/">Archives</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/tags/">Tags</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/categories/">Categories</a>
+      </li>
+  </ul>
+</nav>
+    </header>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
     
-    <div class="article-entry" itemprop="articleBody">
+    <header class="post-header">
+      <h1 class="post-title">NodeJS公会服的设计思路</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2018/06/25 </span>
+        
+        <span class="more-meta"> 1146 words </span>
+        <span class="more-meta"> 3 mins read </span>
+        
+      </div>
+    </header>
+
+    
+    
+<div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">Contents</h2>
+  
+  <div class="post-toc-content always-active">
+    <nav id="TableOfContents">
+<ul>
+<li><a href="#前言"><strong>前言</strong></a>
+<ul>
+<li><a href="#核心问题">核心问题</a>
+<ul>
+<li><a href="#进程间通信">进程间通信</a></li>
+<li><a href="#服务器压力">服务器压力</a></li>
+<li><a href="#玩家信息同步问题">玩家信息同步问题</a></li>
+<li><a href="#数据锁问题">数据锁问题</a></li>
+</ul></li>
+<li><a href="#瓶颈">瓶颈</a></li>
+<li><a href="#关于公会集群的想法">关于公会集群的想法</a></li>
+</ul></li>
+<li><a href="#结束语">结束语</a></li>
+</ul>
+</nav>
+  </div>
+</div>
+
+    
+    
+
+    
+    <div class="post-content">
       
-        <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a><strong>前言</strong></h1><p>公会是游戏功能中玩家数据交互最为频繁的一个功能，如何让多个玩家操作同一份数据有序而不出错是个很值得非常重要的问题。NodeJS服务器由于无阻塞、单线程、异步、集群的特点使得此功能难点又增加N个百分点，本文分享自己单进程公会服的设计经验。</p>
-<h2 id="核心问题"><a href="#核心问题" class="headerlink" title="核心问题"></a>核心问题</h2><ul>
+
+<h1 id="前言"><strong>前言</strong></h1>
+
+<p>公会是游戏功能中玩家数据交互最为频繁的一个功能，如何让多个玩家操作同一份数据有序而不出错是个很值得非常重要的问题。NodeJS服务器由于无阻塞、单线程、异步、集群的特点使得此功能难点又增加N个百分点，本文分享自己单进程公会服的设计经验。</p>
+
+<h2 id="核心问题">核心问题</h2>
+
+<ul>
 <li>其它服务器和公会服交互</li>
 <li>公会服如何承担访问压力</li>
 <li>公会玩家基本信息同步问题</li>
 <li>同一公会中会长A请求把会员C设为副会长和副会长B把会员C设为大队长，操作如何保证会员C最终职位为副会长，副会长B操作被否决。</li>
 <li>公会A和公会B同时批准玩家C入会，如何保障先到先得，玩家C只在一个公会。</li>
 </ul>
-<h3 id="进程间通信"><a href="#进程间通信" class="headerlink" title="进程间通信"></a>进程间通信</h3><ul>
+
+<h3 id="进程间通信">进程间通信</h3>
+
+<ul>
 <li>传统方式采用RPC方式,比如客户端GameServer访问需要修改公会数据</li>
 <li>通过Redis发布订阅，比如一些广播请求</li>
 </ul>
-<h3 id="服务器压力"><a href="#服务器压力" class="headerlink" title="服务器压力"></a>服务器压力</h3><ul>
+
+<h3 id="服务器压力">服务器压力</h3>
+
+<ul>
 <li>公会服除内存存放数据外另外在Redis缓存维护一份供其它进程读取。</li>
 <li>客户端不和公会服连接，所有操作都是通过GameServer转发</li>
 <li>客户端对公会的查询操作，通过GameServer访问Redis即可</li>
 <li>GameServer承担客户端消息的基本容错，只有存在修改数据时才访问公会服</li>
 <li>公会成员、公会申请、公会操作日志等数据量较大的UI上做为子标签页打开访问</li>
 </ul>
-<h3 id="玩家信息同步问题"><a href="#玩家信息同步问题" class="headerlink" title="玩家信息同步问题"></a>玩家信息同步问题</h3><ul>
+
+<h3 id="玩家信息同步问题">玩家信息同步问题</h3>
+
+<ul>
 <li>创建公会成员数据对象，分别有姓名、等级、在线时间、公会ID、职位、入会时间、公会贡献等属性</li>
 <li>没有申请、创建、加入公会的没有此对象，</li>
 <li>创建公会成员不和公会对象直接绑定,公会只是公会成员的一个属性</li>
 <li>玩家上下线同步此对象数据，如有特殊需求，可做策略比如每3小时同步一次数据</li>
 </ul>
-<h3 id="数据锁问题"><a href="#数据锁问题" class="headerlink" title="数据锁问题"></a>数据锁问题</h3><ul>
+
+<h3 id="数据锁问题">数据锁问题</h3>
+
+<ul>
 <li>每个公会对象和每个公会成员对象增加一个属性，标识是否为不可写状态</li>
 <li>每个公会对象和每个公会成员对象增加一个消息队列，用来存放等待的请求</li>
 <li>公会对象、公会成员对象为不可写状态时，数据访问需要等待直到状态解除</li>
 <li>等待状态保护机制一定时间内不返回，请求当失败返回</li>
 <li>修改公会加公会锁，修改玩家加玩家锁，同时修改时，需要同时加，访问也要等待所有状态解除</li>
 </ul>
-<h2 id="瓶颈"><a href="#瓶颈" class="headerlink" title="瓶颈"></a>瓶颈</h2><p>由于是采用单进程，虽然有策略分担了大部分压力，但终究对于大部分玩家都在操作工作时会出问题。所以，对公会的功能开发需要仔细考虑，比如公会功能放到一定等级才开放，公会部分操作设置冷却时间，部分功能可以考虑利用redis在其它进程实现。而这进一步，则需要的更加缜密的思维，以及天才般的想法。</p>
-<h2 id="关于公会集群的想法"><a href="#关于公会集群的想法" class="headerlink" title="关于公会集群的想法"></a>关于公会集群的想法</h2><p>由于公会都有固定的ID，我们可以通过Hash算法使每次对公会的操作准确命中对应的进程。当然，肯定还有其它坑要踩，比如两个公会操作同一个玩家数据时，怎么对应。知识范围有限，还未有有效的方法。</p>
-<h1 id="结束语"><a href="#结束语" class="headerlink" title="结束语"></a>结束语</h1><p>又到了说再见的时候了，此方案果然经不起仔细的推敲，知识掌握程度限制了对自己的思维能力。技术能力又使自己不能干脆的做出用C++或者GO语言实在公会服的设计决定。<br>总之，思路依然幼稚，贻笑大方了。</p>
+
+<h2 id="瓶颈">瓶颈</h2>
+
+<p>由于是采用单进程，虽然有策略分担了大部分压力，但终究对于大部分玩家都在操作工作时会出问题。所以，对公会的功能开发需要仔细考虑，比如公会功能放到一定等级才开放，公会部分操作设置冷却时间，部分功能可以考虑利用redis在其它进程实现。而这进一步，则需要的更加缜密的思维，以及天才般的想法。</p>
+
+<h2 id="关于公会集群的想法">关于公会集群的想法</h2>
+
+<p>由于公会都有固定的ID，我们可以通过Hash算法使每次对公会的操作准确命中对应的进程。当然，肯定还有其它坑要踩，比如两个公会操作同一个玩家数据时，怎么对应。知识范围有限，还未有有效的方法。</p>
+
+<h1 id="结束语">结束语</h1>
+
+<p>又到了说再见的时候了，此方案果然经不起仔细的推敲，知识掌握程度限制了对自己的思维能力。技术能力又使自己不能干脆的做出用C++或者GO语言实在公会服的设计决定。
+总之，思路依然幼稚，贻笑大方了。</p>
+
+    </div>
+
+    
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">Author</span>
+    <span class="item-content">wangkm</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">LastMod</span>
+    <span class="item-content">2018/06/25</span>
+  </p>
+  
+  
+</div>
+
+    
+    
+
+    <footer class="post-footer">
+      
 
       
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/06/25/NodeJS公会服的设计思路/" data-id="cjlvo0opx00024svnm9sftk47" class="article-share-link">Share</a>
-      
-      
+      <nav class="post-nav">
+        
+          <a class="prev" href="/2018/07/02/%E5%9F%BA%E4%BA%8Ejson%E6%A0%BC%E5%BC%8F%E7%9A%84%E7%8E%A9%E5%AE%B6%E6%95%B0%E6%8D%AE%E5%85%BC%E5%AE%B9/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">基于json格式的玩家数据兼容</span>
+            <span class="prev-text nav-mobile">Prev</span>
+          </a>
+        
+          <a class="next" href="/2018/06/20/NodeJS%E5%9F%BA%E4%BA%8ERedis%E5%B9%BF%E6%92%AD%E6%9C%8D%E7%9A%84%E8%AE%BE%E8%AE%A1%E6%80%9D%E8%B7%AF/">
+            <span class="next-text nav-default">NodeJS基于Redis广播服的设计思路</span>
+            <span class="next-text nav-mobile">Next</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
     </footer>
-  </div>
-  
-    
-<nav id="article-nav">
-  
-    <a href="/2018/07/02/基于json格式的玩家数据兼容/" id="article-nav-newer" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">Newer</strong>
-      <div class="article-nav-title">
+  </article>
+        </div>
         
-          基于json格式的玩家数据兼容
-        
+  
+
+  
+
       </div>
-    </a>
-  
-  
-    <a href="/2018/06/20/NodeJS基于Redis广播服的设计思路/" id="article-nav-older" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">Older</strong>
-      <div class="article-nav-title">NodeJS基于Redis广播服的设计思路</div>
-    </a>
-  
-</nav>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:your@email.com" class="iconfont icon-email" title="email"></a>
+      <a href="http://localhost:1313" class="iconfont icon-stack-overflow" title="stack-overflow"></a>
+      <a href="http://localhost:1313" class="iconfont icon-twitter" title="twitter"></a>
+      <a href="http://localhost:1313" class="iconfont icon-facebook" title="facebook"></a>
+      <a href="http://localhost:1313" class="iconfont icon-linkedin" title="linkedin"></a>
+      <a href="http://localhost:1313" class="iconfont icon-google" title="google"></a>
+      <a href="http://localhost:1313" class="iconfont icon-github" title="github"></a>
+      <a href="http://localhost:1313" class="iconfont icon-weibo" title="weibo"></a>
+      <a href="http://localhost:1313" class="iconfont icon-zhihu" title="zhihu"></a>
+      <a href="http://localhost:1313" class="iconfont icon-douban" title="douban"></a>
+      <a href="http://localhost:1313" class="iconfont icon-pocket" title="pocket"></a>
+      <a href="http://localhost:1313" class="iconfont icon-tumblr" title="tumblr"></a>
+      <a href="http://localhost:1313" class="iconfont icon-instagram" title="instagram"></a>
+  <a href="https://wangkunmeng.github.io/index.xml" type="application/rss+xml" class="iconfont icon-rss" title="rss"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    Powered by <a class="hexo-link" href="https://gohugo.io">Hugo</a>
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    Theme - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
 
   
-</article>
 
-</section>
-        
-          <aside id="sidebar">
-  
-    
+  <span class="copyright-year">
+    &copy; 
+    2018
+    <span class="heart">
+      <i class="iconfont icon-heart"></i>
+    </span>
+    <span class="author">wangkm</span>
+  </span>
+</div>
+    </footer>
 
-  
-    
-
-  
-    
-  
-    
-  <div class="widget-wrap">
-    <h3 class="widget-title">Archives</h3>
-    <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/09/">September 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">August 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">July 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">June 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">May 2018</a></li></ul>
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
     </div>
   </div>
-
-
   
-    
-  <div class="widget-wrap">
-    <h3 class="widget-title">Recent Posts</h3>
-    <div class="widget">
-      <ul>
-        
-          <li>
-            <a href="/2018/09/10/广播服压测总结/">广播服压测总结</a>
-          </li>
-        
-          <li>
-            <a href="/2018/08/13/游戏任务系统的设计(下)/">游戏任务系统的设计(下)</a>
-          </li>
-        
-          <li>
-            <a href="/2018/08/06/基于RPC的分布式广播服设计思路/">基于RPC的分布式广播服设计思路</a>
-          </li>
-        
-          <li>
-            <a href="/2018/07/31/提问的智慧-读书笔记/">提问的智慧-读书笔记</a>
-          </li>
-        
-          <li>
-            <a href="/2018/07/26/玩家定时器模块的设计与实现/">玩家定时器模块的设计与实现</a>
-          </li>
-        
-      </ul>
-    </div>
-  </div>
-
-  
-</aside>
-        
-      </div>
-      <footer id="footer">
-  
-  <div class="outer">
-    <div id="footer-info" class="inner">
-      &copy; 2018 wangkm<br>
-      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
-    </div>
-  </div>
-</footer>
-    </div>
-    <nav id="mobile-nav">
-  
-    <a href="/" class="mobile-nav-link">Home</a>
-  
-    <a href="/archives" class="mobile-nav-link">Archives</a>
-  
-</nav>
-    
-
-<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+<script src="/lib/highlight/highlight.pack.js?v=20171001"></script><script type="text/javascript" src="/lib/jquery/jquery-3.2.1.min.js"></script>
+  <script type="text/javascript" src="/lib/slideout/slideout-1.0.1.min.js"></script>
+  <script type="text/javascript" src="/lib/fancybox/jquery.fancybox-3.1.20.min.js"></script>
 
 
-  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
-  <script src="/fancybox/jquery.fancybox.pack.js"></script>
-
-
-<script src="/js/script.js"></script>
+<script type="text/javascript" src="/dist/even.min.js?v=3.2.0"></script>
 
 
 
-  </div>
+
+
+
+
+
 </body>
 </html>

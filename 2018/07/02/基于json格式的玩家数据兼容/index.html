@@ -1,221 +1,404 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="utf-8">
-  
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>基于json格式的玩家数据兼容 - Even - A super concise theme for Hugo</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
 
-  
-  <title>基于json格式的玩家数据兼容 | wangkm&#39;s blog</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="前言游戏开发中，玩家数据格式不是一成不变的，保证玩家数据格式变更后玩家上线后依然能够进行游戏是基本原则。本文主要阐述数据库是Mysql时，以玩家表human为例子说明玩家数据兼容的一些方法。 12345678910111213CREATE TABLE `human` (    `uid` int(10) NOT NULL COMMENT &apos;玩家唯一ID&apos;,    `name` varchar(50">
-<meta property="og:type" content="article">
-<meta property="og:title" content="基于json格式的玩家数据兼容">
-<meta property="og:url" content="http://yoursite.com/2018/07/02/基于json格式的玩家数据兼容/index.html">
-<meta property="og:site_name" content="wangkm&#39;s blog">
-<meta property="og:description" content="前言游戏开发中，玩家数据格式不是一成不变的，保证玩家数据格式变更后玩家上线后依然能够进行游戏是基本原则。本文主要阐述数据库是Mysql时，以玩家表human为例子说明玩家数据兼容的一些方法。 12345678910111213CREATE TABLE `human` (    `uid` int(10) NOT NULL COMMENT &apos;玩家唯一ID&apos;,    `name` varchar(50">
-<meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2018-07-02T02:21:13.375Z">
-<meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="基于json格式的玩家数据兼容">
-<meta name="twitter:description" content="前言游戏开发中，玩家数据格式不是一成不变的，保证玩家数据格式变更后玩家上线后依然能够进行游戏是基本原则。本文主要阐述数据库是Mysql时，以玩家表human为例子说明玩家数据兼容的一些方法。 12345678910111213CREATE TABLE `human` (    `uid` int(10) NOT NULL COMMENT &apos;玩家唯一ID&apos;,    `name` varchar(50">
-  
-    <link rel="alternate" href="/atom.xml" title="wangkm&#39;s blog" type="application/atom+xml">
-  
-  
-    <link rel="icon" href="/favicon.png">
-  
-  
-    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
-  
-  <link rel="stylesheet" href="/css/style.css">
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="wangkm" />
+  <meta name="description" content="前言 游戏开发中，玩家数据格式不是一成不变的，保证玩家数据格式变更后玩家上线后依然能够进行游戏是基本原则。 本文主要阐述数据库是Mysql时，以" />
+
+  <meta name="keywords" content="Node, wangkunmeng, 服务器" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.48" />
+
+
+<link rel="canonical" href="https://wangkunmeng.github.io/2018/07/02/%E5%9F%BA%E4%BA%8Ejson%E6%A0%BC%E5%BC%8F%E7%9A%84%E7%8E%A9%E5%AE%B6%E6%95%B0%E6%8D%AE%E5%85%BC%E5%AE%B9/" />
+
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+
+
+
+
+<link href="/dist/even.min.css?v=3.2.0" rel="stylesheet">
+<link href="/lib/fancybox/jquery.fancybox-3.1.20.min.css" rel="stylesheet">
+
+
+
+
+<meta property="og:title" content="基于json格式的玩家数据兼容" />
+<meta property="og:description" content="前言 游戏开发中，玩家数据格式不是一成不变的，保证玩家数据格式变更后玩家上线后依然能够进行游戏是基本原则。 本文主要阐述数据库是Mysql时，以" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://wangkunmeng.github.io/2018/07/02/%E5%9F%BA%E4%BA%8Ejson%E6%A0%BC%E5%BC%8F%E7%9A%84%E7%8E%A9%E5%AE%B6%E6%95%B0%E6%8D%AE%E5%85%BC%E5%AE%B9/" /><meta property="article:published_time" content="2018-07-02T10:14:29&#43;00:00"/>
+<meta property="article:modified_time" content="2018-07-02T10:14:29&#43;00:00"/>
+<meta itemprop="name" content="基于json格式的玩家数据兼容">
+<meta itemprop="description" content="前言 游戏开发中，玩家数据格式不是一成不变的，保证玩家数据格式变更后玩家上线后依然能够进行游戏是基本原则。 本文主要阐述数据库是Mysql时，以">
+
+
+<meta itemprop="datePublished" content="2018-07-02T10:14:29&#43;00:00" />
+<meta itemprop="dateModified" content="2018-07-02T10:14:29&#43;00:00" />
+<meta itemprop="wordCount" content="935">
+
+
+
+<meta itemprop="keywords" content="" />
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="基于json格式的玩家数据兼容"/>
+<meta name="twitter:description" content="前言 游戏开发中，玩家数据格式不是一成不变的，保证玩家数据格式变更后玩家上线后依然能够进行游戏是基本原则。 本文主要阐述数据库是Mysql时，以"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
 </head>
-
 <body>
-  <div id="container">
-    <div id="wrap">
-      <header id="header">
-  <div id="banner"></div>
-  <div id="header-outer" class="outer">
-    <div id="header-title" class="inner">
-      <h1 id="logo-wrap">
-        <a href="/" id="logo">wangkm&#39;s blog</a>
-      </h1>
-      
-    </div>
-    <div id="header-inner" class="inner">
-      <nav id="main-nav">
-        <a id="main-nav-toggle" class="nav-icon"></a>
-        
-          <a class="main-nav-link" href="/">Home</a>
-        
-          <a class="main-nav-link" href="/archives">Archives</a>
-        
-      </nav>
-      <nav id="sub-nav">
-        
-          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
-        
-        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
-      </nav>
-      <div id="search-form-wrap">
-        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
-      </div>
-    </div>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">wangkm&#39;s blog</a>
   </div>
-</header>
-      <div class="outer">
-        <section id="main"><article id="post-基于json格式的玩家数据兼容" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2018/07/02/基于json格式的玩家数据兼容/" class="article-date">
-  <time datetime="2018-07-02T02:14:29.000Z" itemprop="datePublished">2018-07-02</time>
-</a>
-    
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
   </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 class="article-title" itemprop="name">
-      基于json格式的玩家数据兼容
-    </h1>
-  
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <a href="/">
+        <li class="mobile-menu-item">Home</li>
+      </a><a href="/post/">
+        <li class="mobile-menu-item">Archives</li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">Tags</li>
+      </a><a href="/categories/">
+        <li class="mobile-menu-item">Categories</li>
+      </a>
+  </ul>
+</nav>
+  <div class="container" id="mobile-panel">
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">wangkm&#39;s blog</a>
+</div>
 
-      </header>
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">Home</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/post/">Archives</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/tags/">Tags</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/categories/">Categories</a>
+      </li>
+  </ul>
+</nav>
+    </header>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
     
-    <div class="article-entry" itemprop="articleBody">
+    <header class="post-header">
+      <h1 class="post-title">基于json格式的玩家数据兼容</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2018/07/02 </span>
+        
+        <span class="more-meta"> 935 words </span>
+        <span class="more-meta"> 2 mins read </span>
+        
+      </div>
+    </header>
+
+    
+    
+<div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">Contents</h2>
+  
+  <div class="post-toc-content always-active">
+    <nav id="TableOfContents">
+<ul>
+<li><a href="#前言">前言</a>
+<ul>
+<li><a href="#一-增删某个字段">一、增删某个字段</a></li>
+<li><a href="#二-字段数据类型变更">二、字段数据类型变更</a></li>
+<li><a href="#三-字段内数据内容格式变更">三、字段内数据内容格式变更</a></li>
+<li><a href="#归纳总结">归纳总结</a></li>
+</ul></li>
+</ul>
+</nav>
+  </div>
+</div>
+
+    
+    
+
+    
+    <div class="post-content">
       
-        <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>游戏开发中，玩家数据格式不是一成不变的，保证玩家数据格式变更后玩家上线后依然能够进行游戏是基本原则。<br>本文主要阐述数据库是Mysql时，以玩家表human为例子说明玩家数据兼容的一些方法。</p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> <span class="string">`human`</span> (</span><br><span class="line">    <span class="string">`uid`</span> <span class="built_in">int</span>(<span class="number">10</span>) <span class="keyword">NOT</span> <span class="literal">NULL</span> <span class="keyword">COMMENT</span> <span class="string">'玩家唯一ID'</span>,</span><br><span class="line">    <span class="string">`name`</span> <span class="built_in">varchar</span>(<span class="number">50</span>) <span class="keyword">COLLATE</span> utf8_unicode_ci <span class="keyword">DEFAULT</span> <span class="string">''</span> <span class="keyword">COMMENT</span> <span class="string">'玩家名字'</span>,</span><br><span class="line">    <span class="string">`head`</span> <span class="built_in">varchar</span>(<span class="number">50</span>) <span class="keyword">COLLATE</span> utf8_unicode_ci <span class="keyword">DEFAULT</span> <span class="string">'[1,1,3]'</span> <span class="keyword">COMMENT</span> <span class="string">'当前头像'</span>,</span><br><span class="line">    <span class="string">`exp`</span> <span class="built_in">int</span>(<span class="number">10</span>) <span class="keyword">unsigned</span> <span class="keyword">DEFAULT</span> <span class="string">'0'</span> <span class="keyword">COMMENT</span> <span class="string">'当前经验'</span>,</span><br><span class="line">    <span class="string">`level`</span> <span class="built_in">int</span>(<span class="number">3</span>) <span class="keyword">unsigned</span> <span class="keyword">DEFAULT</span> <span class="string">'0'</span> <span class="keyword">COMMENT</span> <span class="string">'当前等级'</span>,</span><br><span class="line">    <span class="string">`age`</span> <span class="built_in">int</span>(<span class="number">3</span>) <span class="keyword">unsigned</span> <span class="keyword">DEFAULT</span> <span class="string">'0'</span> <span class="keyword">COMMENT</span> <span class="string">'玩家年龄'</span>,</span><br><span class="line">    <span class="string">`gold`</span> <span class="built_in">bigint</span>(<span class="number">20</span>) <span class="keyword">unsigned</span> <span class="keyword">DEFAULT</span> <span class="string">'0'</span> <span class="keyword">COMMENT</span> <span class="string">'当前元宝数'</span>,</span><br><span class="line">    <span class="string">`diamond`</span> <span class="built_in">bigint</span>(<span class="number">20</span>) <span class="keyword">unsigned</span> <span class="keyword">DEFAULT</span> <span class="string">'0'</span> <span class="keyword">COMMENT</span> <span class="string">'当前钻石数量'</span>,</span><br><span class="line">    <span class="string">`VIP`</span> <span class="built_in">int</span>(<span class="number">2</span>) <span class="keyword">unsigned</span> <span class="keyword">DEFAULT</span> <span class="string">'0'</span> <span class="keyword">COMMENT</span> <span class="string">'VIP等级'</span>,</span><br><span class="line">    <span class="string">`ctGetSkin`</span> <span class="built_in">text</span> <span class="keyword">COLLATE</span> utf8_unicode_ci <span class="keyword">COMMENT</span> <span class="string">'已获得不重复皮肤CfgId'</span>,</span><br><span class="line">    PRIMARY <span class="keyword">KEY</span> (<span class="string">`uid`</span>)</span><br><span class="line">) <span class="keyword">ENGINE</span>=MyISAM <span class="keyword">DEFAULT</span> <span class="keyword">CHARSET</span>=utf8 <span class="keyword">COLLATE</span>=utf8_unicode_ci <span class="keyword">COMMENT</span>=<span class="string">'玩家基础信息'</span>;</span><br></pre></td></tr></table></figure>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">human对象结构</span><br><span class="line">&#123;</span><br><span class="line">    uid:<span class="number">0</span>,</span><br><span class="line">    name:<span class="string">''</span>,</span><br><span class="line">    exp:<span class="number">0</span>,</span><br><span class="line">    level:<span class="number">0</span>，</span><br><span class="line">    age:<span class="number">0</span>,</span><br><span class="line">    gold:<span class="number">0</span>,</span><br><span class="line">    diamond:<span class="number">0</span>,</span><br><span class="line">    VIP:<span class="number">0</span>,</span><br><span class="line">    ctGetSkin:<span class="string">'&#123;&#125;'</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h2 id="一、增删某个字段"><a href="#一、增删某个字段" class="headerlink" title="一、增删某个字段"></a>一、增删某个字段</h2><p>eg.策划需求变更，需要删除human.age字段<br>1.直接删除tb human.age字段<br>2.删除human实例化对象中age属性</p>
-<h2 id="二、字段数据类型变更"><a href="#二、字段数据类型变更" class="headerlink" title="二、字段数据类型变更"></a>二、字段数据类型变更</h2><p>eg.uid从int类型转换为varchar<br>1.tb human.age字段类型能强转，直接转换<br>1.1 human实例化对象中uid属性调整为string</p>
-<p>2.human中uid类型不能强转,uid字段可以变更<br>2.1 采用增删字段的解决方式</p>
-<p>3.human中uid类型不能强转,uid字段不可以变更<br>3.1 新建字段内uid_1<br>3.2 写策略把uid值调整为目标格式，写到uid_1内<br>3.3 删除uid字段，uid_1字段重命名为uid</p>
+
+<h1 id="前言">前言</h1>
+
+<p>游戏开发中，玩家数据格式不是一成不变的，保证玩家数据格式变更后玩家上线后依然能够进行游戏是基本原则。
+本文主要阐述数据库是Mysql时，以玩家表human为例子说明玩家数据兼容的一些方法。</p>
+
+<pre><code class="language-sql">CREATE TABLE `human` (
+    `uid` int(10) NOT NULL COMMENT '玩家唯一ID',
+    `name` varchar(50) COLLATE utf8_unicode_ci DEFAULT '' COMMENT '玩家名字',
+    `head` varchar(50) COLLATE utf8_unicode_ci DEFAULT '[1,1,3]' COMMENT '当前头像',
+    `exp` int(10) unsigned DEFAULT '0' COMMENT '当前经验',
+    `level` int(3) unsigned DEFAULT '0' COMMENT '当前等级',
+    `age` int(3) unsigned DEFAULT '0' COMMENT '玩家年龄',
+    `gold` bigint(20) unsigned DEFAULT '0' COMMENT '当前元宝数',
+    `diamond` bigint(20) unsigned DEFAULT '0' COMMENT '当前钻石数量',
+    `VIP` int(2) unsigned DEFAULT '0' COMMENT 'VIP等级',
+    `ctGetSkin` text COLLATE utf8_unicode_ci COMMENT '已获得不重复皮肤CfgId',
+    PRIMARY KEY (`uid`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='玩家基础信息';
+</code></pre>
+
+<pre><code class="language-js">human对象结构
+{
+    uid:0,
+    name:'',
+    exp:0,
+    level:0，
+    age:0,
+    gold:0,
+    diamond:0,
+    VIP:0,
+    ctGetSkin:'{}'
+}
+</code></pre>
+
+<h2 id="一-增删某个字段">一、增删某个字段</h2>
+
+<p>eg.策划需求变更，需要删除human.age字段
+1.直接删除tb human.age字段
+2.删除human实例化对象中age属性</p>
+
+<h2 id="二-字段数据类型变更">二、字段数据类型变更</h2>
+
+<p>eg.uid从int类型转换为varchar
+1.tb human.age字段类型能强转，直接转换
+1.1 human实例化对象中uid属性调整为string</p>
+
+<p>2.human中uid类型不能强转,uid字段可以变更
+2.1 采用增删字段的解决方式</p>
+
+<p>3.human中uid类型不能强转,uid字段不可以变更
+3.1 新建字段内uid_1
+3.2 写策略把uid值调整为目标格式，写到uid_1内
+3.3 删除uid字段，uid_1字段重命名为uid</p>
+
 <p>3.*的方式不推荐，操作复杂，容易出错。</p>
-<h2 id="三、字段内数据内容格式变更"><a href="#三、字段内数据内容格式变更" class="headerlink" title="三、字段内数据内容格式变更"></a>三、字段内数据内容格式变更</h2><p>eg. ctGetSkin:’{id:{num},id:{num}}’ =&gt; ctGetSkin:’{id:{num, liftTime},id:{num, liftTime}}’<br>1.tb human.ctGetSkin 字段不变更<br>1.1 skin对象的添加lifeTime属性<br>1.2 调整ctGetSkin的解析方式,ctGetSkin = OnLoadCtGetSkin(reqly.ctGetSkin);</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//CtGetSkin对象</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">CtGetSkinDefault</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> &#123;&#125;;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//Skin对象</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">SkinDefault</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> &#123;</span><br><span class="line">        num:<span class="number">1</span>,</span><br><span class="line">        lifeTime:<span class="number">-1</span>,</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//对象兼容解析</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">ObjCompatible</span>(<span class="params">tarObj, srcObj</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">if</span>(!srcObj) &#123;</span><br><span class="line">        <span class="keyword">return</span> tarObj;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span>(<span class="keyword">typeof</span> srcObj === <span class="string">'string'</span>)&#123;</span><br><span class="line">        srcObj = <span class="built_in">JSON</span>.parse(srcObj);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span>(<span class="keyword">typeof</span> srcObj !== <span class="string">'object'</span>)&#123;</span><br><span class="line">        <span class="keyword">return</span> tarObj;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">let</span> i <span class="keyword">in</span> tarObj)&#123;</span><br><span class="line">        <span class="keyword">let</span> k = i + <span class="string">''</span>;</span><br><span class="line">        <span class="keyword">if</span>(srcObj[k] === <span class="literal">undefined</span> || srcObj[k] === <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="keyword">continue</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span>(<span class="keyword">typeof</span> tarObj[k] === <span class="string">'object'</span>) &#123;</span><br><span class="line">            ObjCompatible(tarObj[k], srcObj[k]);</span><br><span class="line">            <span class="keyword">continue</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        tarObj[k] = srcObj[k];</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> tarObj;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//数据解析容错</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">OnLoadCtGetSkin</span>(<span class="params">data</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">let</span> ret = CtGetSkinDefault();</span><br><span class="line">    <span class="keyword">if</span>(<span class="keyword">typeof</span> data === <span class="string">'string'</span>) &#123;</span><br><span class="line">        data = <span class="built_in">JSON</span>.parse(data);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span>(<span class="keyword">typeof</span> data !== <span class="string">'object'</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> ret;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//应该做一个属性递归判断</span></span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">let</span> k <span class="keyword">in</span> ret) &#123;</span><br><span class="line">        <span class="keyword">if</span>(data[k] === <span class="literal">undefined</span> || data[k] === <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="keyword">continue</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        ret[k] = ObjCompatible(SkinDefault(), data[k]);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h2 id="归纳总结"><a href="#归纳总结" class="headerlink" title="归纳总结"></a>归纳总结</h2><p>分析完上面三个场景解决方案，发现OnLoadCtGetSkin的这种方式可以通用。只要设计好一套的human解析方式，兼容问题代码方面基本不会出问题，所有关注点就在table调整上了。</p>
+
+<h2 id="三-字段内数据内容格式变更">三、字段内数据内容格式变更</h2>
+
+<p>eg. ctGetSkin:&lsquo;{id:{num},id:{num}}&rsquo; =&gt; ctGetSkin:&lsquo;{id:{num, liftTime},id:{num, liftTime}}&rsquo;
+1.tb human.ctGetSkin 字段不变更
+1.1 skin对象的添加lifeTime属性
+1.2 调整ctGetSkin的解析方式,ctGetSkin = OnLoadCtGetSkin(reqly.ctGetSkin);</p>
+
+<pre><code class="language-js">//CtGetSkin对象
+function CtGetSkinDefault() {
+    return {};
+}
+
+//Skin对象
+function SkinDefault() {
+    return {
+        num:1,
+        lifeTime:-1,
+    }
+}
+
+//对象兼容解析
+function ObjCompatible(tarObj, srcObj) {
+    if(!srcObj) {
+        return tarObj;
+    }
+    if(typeof srcObj === 'string'){
+        srcObj = JSON.parse(srcObj);
+    }
+    if(typeof srcObj !== 'object'){
+        return tarObj;
+    }
+    for(let i in tarObj){
+        let k = i + '';
+        if(srcObj[k] === undefined || srcObj[k] === null) {
+            continue;
+        }
+        if(typeof tarObj[k] === 'object') {
+            ObjCompatible(tarObj[k], srcObj[k]);
+            continue;
+        }
+        tarObj[k] = srcObj[k];
+    }
+    return tarObj;
+}
+
+//数据解析容错
+function OnLoadCtGetSkin(data) {
+    let ret = CtGetSkinDefault();
+    if(typeof data === 'string') {
+        data = JSON.parse(data);
+    }
+    if(typeof data !== 'object') {
+        return ret;
+    }
+    //应该做一个属性递归判断
+    for(let k in ret) {
+        if(data[k] === undefined || data[k] === null) {
+            continue;
+        }
+        ret[k] = ObjCompatible(SkinDefault(), data[k]);
+    }
+}
+</code></pre>
+
+<h2 id="归纳总结">归纳总结</h2>
+
+<p>分析完上面三个场景解决方案，发现OnLoadCtGetSkin的这种方式可以通用。只要设计好一套的human解析方式，兼容问题代码方面基本不会出问题，所有关注点就在table调整上了。</p>
+
+    </div>
+
+    
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">Author</span>
+    <span class="item-content">wangkm</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">LastMod</span>
+    <span class="item-content">2018/07/02</span>
+  </p>
+  
+  
+</div>
+
+    
+    
+
+    <footer class="post-footer">
+      
 
       
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/07/02/基于json格式的玩家数据兼容/" data-id="cjlvo0oq300074svn2aqs338d" class="article-share-link">Share</a>
-      
-      
+      <nav class="post-nav">
+        
+          <a class="prev" href="/2018/07/09/%E4%BD%BF%E7%94%A8%E6%B6%88%E6%81%AF%E5%AD%97%E5%85%B8%E5%81%9A%E6%B6%88%E6%81%AF%E6%A0%A1%E9%AA%8C/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">使用消息字典做消息校验</span>
+            <span class="prev-text nav-mobile">Prev</span>
+          </a>
+        
+          <a class="next" href="/2018/06/25/NodeJS%E5%85%AC%E4%BC%9A%E6%9C%8D%E7%9A%84%E8%AE%BE%E8%AE%A1%E6%80%9D%E8%B7%AF/">
+            <span class="next-text nav-default">NodeJS公会服的设计思路</span>
+            <span class="next-text nav-mobile">Next</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
     </footer>
-  </div>
-  
-    
-<nav id="article-nav">
-  
-    <a href="/2018/07/09/使用消息字典做消息校验/" id="article-nav-newer" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">Newer</strong>
-      <div class="article-nav-title">
+  </article>
+        </div>
         
-          使用消息字典做消息校验
-        
+  
+
+  
+
       </div>
-    </a>
-  
-  
-    <a href="/2018/06/25/NodeJS公会服的设计思路/" id="article-nav-older" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">Older</strong>
-      <div class="article-nav-title">NodeJS公会服的设计思路</div>
-    </a>
-  
-</nav>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:your@email.com" class="iconfont icon-email" title="email"></a>
+      <a href="http://localhost:1313" class="iconfont icon-stack-overflow" title="stack-overflow"></a>
+      <a href="http://localhost:1313" class="iconfont icon-twitter" title="twitter"></a>
+      <a href="http://localhost:1313" class="iconfont icon-facebook" title="facebook"></a>
+      <a href="http://localhost:1313" class="iconfont icon-linkedin" title="linkedin"></a>
+      <a href="http://localhost:1313" class="iconfont icon-google" title="google"></a>
+      <a href="http://localhost:1313" class="iconfont icon-github" title="github"></a>
+      <a href="http://localhost:1313" class="iconfont icon-weibo" title="weibo"></a>
+      <a href="http://localhost:1313" class="iconfont icon-zhihu" title="zhihu"></a>
+      <a href="http://localhost:1313" class="iconfont icon-douban" title="douban"></a>
+      <a href="http://localhost:1313" class="iconfont icon-pocket" title="pocket"></a>
+      <a href="http://localhost:1313" class="iconfont icon-tumblr" title="tumblr"></a>
+      <a href="http://localhost:1313" class="iconfont icon-instagram" title="instagram"></a>
+  <a href="https://wangkunmeng.github.io/index.xml" type="application/rss+xml" class="iconfont icon-rss" title="rss"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    Powered by <a class="hexo-link" href="https://gohugo.io">Hugo</a>
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    Theme - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
 
   
-</article>
 
-</section>
-        
-          <aside id="sidebar">
-  
-    
+  <span class="copyright-year">
+    &copy; 
+    2018
+    <span class="heart">
+      <i class="iconfont icon-heart"></i>
+    </span>
+    <span class="author">wangkm</span>
+  </span>
+</div>
+    </footer>
 
-  
-    
-
-  
-    
-  
-    
-  <div class="widget-wrap">
-    <h3 class="widget-title">Archives</h3>
-    <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/09/">September 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">August 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">July 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">June 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">May 2018</a></li></ul>
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
     </div>
   </div>
-
-
   
-    
-  <div class="widget-wrap">
-    <h3 class="widget-title">Recent Posts</h3>
-    <div class="widget">
-      <ul>
-        
-          <li>
-            <a href="/2018/09/10/广播服压测总结/">广播服压测总结</a>
-          </li>
-        
-          <li>
-            <a href="/2018/08/13/游戏任务系统的设计(下)/">游戏任务系统的设计(下)</a>
-          </li>
-        
-          <li>
-            <a href="/2018/08/06/基于RPC的分布式广播服设计思路/">基于RPC的分布式广播服设计思路</a>
-          </li>
-        
-          <li>
-            <a href="/2018/07/31/提问的智慧-读书笔记/">提问的智慧-读书笔记</a>
-          </li>
-        
-          <li>
-            <a href="/2018/07/26/玩家定时器模块的设计与实现/">玩家定时器模块的设计与实现</a>
-          </li>
-        
-      </ul>
-    </div>
-  </div>
-
-  
-</aside>
-        
-      </div>
-      <footer id="footer">
-  
-  <div class="outer">
-    <div id="footer-info" class="inner">
-      &copy; 2018 wangkm<br>
-      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
-    </div>
-  </div>
-</footer>
-    </div>
-    <nav id="mobile-nav">
-  
-    <a href="/" class="mobile-nav-link">Home</a>
-  
-    <a href="/archives" class="mobile-nav-link">Archives</a>
-  
-</nav>
-    
-
-<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+<script src="/lib/highlight/highlight.pack.js?v=20171001"></script><script type="text/javascript" src="/lib/jquery/jquery-3.2.1.min.js"></script>
+  <script type="text/javascript" src="/lib/slideout/slideout-1.0.1.min.js"></script>
+  <script type="text/javascript" src="/lib/fancybox/jquery.fancybox-3.1.20.min.js"></script>
 
 
-  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
-  <script src="/fancybox/jquery.fancybox.pack.js"></script>
-
-
-<script src="/js/script.js"></script>
+<script type="text/javascript" src="/dist/even.min.js?v=3.2.0"></script>
 
 
 
-  </div>
+
+
+
+
+
 </body>
 </html>

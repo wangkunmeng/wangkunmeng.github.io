@@ -1,124 +1,237 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="utf-8">
-  
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>广播服压测总结 - Even - A super concise theme for Hugo</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
 
-  
-  <title>广播服压测总结 | wangkm&#39;s blog</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="前言游戏即将上线，本周对广播服进行压力测试，不断调整代码，最终达成了单进程2000人的目标。一些注意事项和大家分享下。 服务端策略采用集群方式，单进程连接数量控制在2000人 获取连接数量  1wss.clients.size;  当连接数达到2000人时，服务端断开客户端并返回错误码。  1wsClient.close(1008, &apos;connector num max&apos;);  连接但5秒内不完成">
-<meta property="og:type" content="article">
-<meta property="og:title" content="广播服压测总结">
-<meta property="og:url" content="http://yoursite.com/2018/09/10/广播服压测总结/index.html">
-<meta property="og:site_name" content="wangkm&#39;s blog">
-<meta property="og:description" content="前言游戏即将上线，本周对广播服进行压力测试，不断调整代码，最终达成了单进程2000人的目标。一些注意事项和大家分享下。 服务端策略采用集群方式，单进程连接数量控制在2000人 获取连接数量  1wss.clients.size;  当连接数达到2000人时，服务端断开客户端并返回错误码。  1wsClient.close(1008, &apos;connector num max&apos;);  连接但5秒内不完成">
-<meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2018-09-10T02:25:26.624Z">
-<meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="广播服压测总结">
-<meta name="twitter:description" content="前言游戏即将上线，本周对广播服进行压力测试，不断调整代码，最终达成了单进程2000人的目标。一些注意事项和大家分享下。 服务端策略采用集群方式，单进程连接数量控制在2000人 获取连接数量  1wss.clients.size;  当连接数达到2000人时，服务端断开客户端并返回错误码。  1wsClient.close(1008, &apos;connector num max&apos;);  连接但5秒内不完成">
-  
-    <link rel="alternate" href="/atom.xml" title="wangkm&#39;s blog" type="application/atom+xml">
-  
-  
-    <link rel="icon" href="/favicon.png">
-  
-  
-    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
-  
-  <link rel="stylesheet" href="/css/style.css">
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="wangkm" />
+  <meta name="description" content="前言 游戏即将上线，本周对广播服进行压力测试，不断调整代码，最终达成了单进程2000人的目标。一些注意事项和大家分享下。 服务端策略 采用集群方式" />
+
+  <meta name="keywords" content="Node, wangkunmeng, 服务器" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.48" />
+
+
+<link rel="canonical" href="https://wangkunmeng.github.io/2018/09/10/%E5%B9%BF%E6%92%AD%E6%9C%8D%E5%8E%8B%E6%B5%8B%E6%80%BB%E7%BB%93/" />
+
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+
+
+
+
+<link href="/dist/even.min.css?v=3.2.0" rel="stylesheet">
+<link href="/lib/fancybox/jquery.fancybox-3.1.20.min.css" rel="stylesheet">
+
+
+
+
+<meta property="og:title" content="广播服压测总结" />
+<meta property="og:description" content="前言 游戏即将上线，本周对广播服进行压力测试，不断调整代码，最终达成了单进程2000人的目标。一些注意事项和大家分享下。 服务端策略 采用集群方式" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://wangkunmeng.github.io/2018/09/10/%E5%B9%BF%E6%92%AD%E6%9C%8D%E5%8E%8B%E6%B5%8B%E6%80%BB%E7%BB%93/" /><meta property="article:published_time" content="2018-09-10T10:24:50&#43;00:00"/>
+<meta property="article:modified_time" content="2018-09-10T10:24:50&#43;00:00"/>
+<meta itemprop="name" content="广播服压测总结">
+<meta itemprop="description" content="前言 游戏即将上线，本周对广播服进行压力测试，不断调整代码，最终达成了单进程2000人的目标。一些注意事项和大家分享下。 服务端策略 采用集群方式">
+
+
+<meta itemprop="datePublished" content="2018-09-10T10:24:50&#43;00:00" />
+<meta itemprop="dateModified" content="2018-09-10T10:24:50&#43;00:00" />
+<meta itemprop="wordCount" content="581">
+
+
+
+<meta itemprop="keywords" content="" />
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="广播服压测总结"/>
+<meta name="twitter:description" content="前言 游戏即将上线，本周对广播服进行压力测试，不断调整代码，最终达成了单进程2000人的目标。一些注意事项和大家分享下。 服务端策略 采用集群方式"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
 </head>
-
 <body>
-  <div id="container">
-    <div id="wrap">
-      <header id="header">
-  <div id="banner"></div>
-  <div id="header-outer" class="outer">
-    <div id="header-title" class="inner">
-      <h1 id="logo-wrap">
-        <a href="/" id="logo">wangkm&#39;s blog</a>
-      </h1>
-      
-    </div>
-    <div id="header-inner" class="inner">
-      <nav id="main-nav">
-        <a id="main-nav-toggle" class="nav-icon"></a>
-        
-          <a class="main-nav-link" href="/">Home</a>
-        
-          <a class="main-nav-link" href="/archives">Archives</a>
-        
-      </nav>
-      <nav id="sub-nav">
-        
-          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
-        
-        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
-      </nav>
-      <div id="search-form-wrap">
-        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
-      </div>
-    </div>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">wangkm&#39;s blog</a>
   </div>
-</header>
-      <div class="outer">
-        <section id="main"><article id="post-广播服压测总结" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2018/09/10/广播服压测总结/" class="article-date">
-  <time datetime="2018-09-10T02:24:50.000Z" itemprop="datePublished">2018-09-10</time>
-</a>
-    
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
   </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 class="article-title" itemprop="name">
-      广播服压测总结
-    </h1>
-  
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <a href="/">
+        <li class="mobile-menu-item">Home</li>
+      </a><a href="/post/">
+        <li class="mobile-menu-item">Archives</li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">Tags</li>
+      </a><a href="/categories/">
+        <li class="mobile-menu-item">Categories</li>
+      </a>
+  </ul>
+</nav>
+  <div class="container" id="mobile-panel">
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">wangkm&#39;s blog</a>
+</div>
 
-      </header>
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">Home</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/post/">Archives</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/tags/">Tags</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/categories/">Categories</a>
+      </li>
+  </ul>
+</nav>
+    </header>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
     
-    <div class="article-entry" itemprop="articleBody">
+    <header class="post-header">
+      <h1 class="post-title">广播服压测总结</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2018/09/10 </span>
+        
+        <span class="more-meta"> 581 words </span>
+        <span class="more-meta"> 2 mins read </span>
+        
+      </div>
+    </header>
+
+    
+    
+<div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">Contents</h2>
+  
+  <div class="post-toc-content always-active">
+    <nav id="TableOfContents">
+<ul>
+<li><a href="#前言">前言</a>
+<ul>
+<li><a href="#服务端策略">服务端策略</a>
+<ul>
+<li><a href="#采用集群方式-单进程连接数量控制在2000人">采用集群方式，单进程连接数量控制在2000人</a></li>
+<li><a href="#同一个频道玩家集中在同一个进程">同一个频道玩家集中在同一个进程</a></li>
+<li><a href="#广播相关">广播相关</a></li>
+<li><a href="#消息相关">消息相关</a></li>
+<li><a href="#日志">日志</a></li>
+</ul></li>
+<li><a href="#机器人策略">机器人策略</a></li>
+<li><a href="#测试策略">测试策略</a></li>
+</ul></li>
+</ul>
+</nav>
+  </div>
+</div>
+
+    
+    
+
+    
+    <div class="post-content">
       
-        <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>游戏即将上线，本周对广播服进行压力测试，不断调整代码，最终达成了单进程2000人的目标。一些注意事项和大家分享下。</p>
-<h2 id="服务端策略"><a href="#服务端策略" class="headerlink" title="服务端策略"></a>服务端策略</h2><h3 id="采用集群方式，单进程连接数量控制在2000人"><a href="#采用集群方式，单进程连接数量控制在2000人" class="headerlink" title="采用集群方式，单进程连接数量控制在2000人"></a>采用集群方式，单进程连接数量控制在2000人</h3><ol>
-<li><p>获取连接数量</p>
- <figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wss.clients.size;</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>当连接数达到2000人时，服务端断开客户端并返回错误码。</p>
- <figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wsClient.close(<span class="number">1008</span>, <span class="string">'connector num max'</span>);</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>连接但5秒内不完成登录验证的客户端要关闭</p>
-</li>
+
+<h1 id="前言">前言</h1>
+
+<p>游戏即将上线，本周对广播服进行压力测试，不断调整代码，最终达成了单进程2000人的目标。一些注意事项和大家分享下。</p>
+
+<h2 id="服务端策略">服务端策略</h2>
+
+<h3 id="采用集群方式-单进程连接数量控制在2000人">采用集群方式，单进程连接数量控制在2000人</h3>
+
+<ol>
+<li>获取连接数量
+<code>js
+wss.clients.size;
+</code></li>
+<li>当连接数达到2000人时，服务端断开客户端并返回错误码。
+<code>js
+wsClient.close(1008, 'connector num max');
+</code></li>
+<li>连接但5秒内不完成登录验证的客户端要关闭</li>
 </ol>
-<h3 id="同一个频道玩家集中在同一个进程"><a href="#同一个频道玩家集中在同一个进程" class="headerlink" title="同一个频道玩家集中在同一个进程"></a>同一个频道玩家集中在同一个进程</h3><ol>
+
+<h3 id="同一个频道玩家集中在同一个进程">同一个频道玩家集中在同一个进程</h3>
+
+<ol>
 <li>连接端口作为数组返回给客户端</li>
 <li>客户端从第一个端口轮询请求可以连接的服务端，直到连接成功。</li>
 </ol>
+
 <p>减少RPC操作，提升通信效率，虽然策略有点低级。</p>
-<h3 id="广播相关"><a href="#广播相关" class="headerlink" title="广播相关"></a>广播相关</h3><ol>
+
+<h3 id="广播相关">广播相关</h3>
+
+<ol>
 <li>消息广播区域分级，频道内、进程内，当前服，所有服</li>
 <li>不同广播区域需要不同的权限，所有服不对客户端开放。</li>
 <li>不同广播区域的消息冷却时间不同。</li>
 </ol>
-<h3 id="消息相关"><a href="#消息相关" class="headerlink" title="消息相关"></a>消息相关</h3><ol>
+
+<h3 id="消息相关">消息相关</h3>
+
+<ol>
 <li>精简消息内容，删除消息内无用数据，尤其优化通讯频繁的消息。</li>
 <li>心跳时间频率适当降低，调整为10秒一次。</li>
 <li>心跳信息不打印。</li>
 </ol>
-<h3 id="日志"><a href="#日志" class="headerlink" title="日志"></a>日志</h3><ol>
+
+<h3 id="日志">日志</h3>
+
+<ol>
 <li>打印接收的消息</li>
 <li>打印一些重要日志</li>
 <li>不打印发送给客户端的消息</li>
 </ol>
+
 <p>适当降低日志，能提升服务端承载能力。</p>
-<h2 id="机器人策略"><a href="#机器人策略" class="headerlink" title="机器人策略"></a>机器人策略</h2><ol>
+
+<h2 id="机器人策略">机器人策略</h2>
+
+<ol>
 <li>每0.5s创建一个机器人进程</li>
 <li>登录聊天服务器</li>
 <li>10s一次心跳</li>
@@ -128,121 +241,117 @@
 <li>120s一次房间招人(当前进程内所有人广播)</li>
 <li>聊天关闭则从步骤2重新开始</li>
 </ol>
-<h2 id="测试策略"><a href="#测试策略" class="headerlink" title="测试策略"></a>测试策略</h2><ol>
+
+<h2 id="测试策略">测试策略</h2>
+
+<ol>
 <li>采用和线上同样的环境测试。</li>
 <li>短期测试可按小时、天来申请服务器测试。</li>
 <li>受网络限制，测试机器人和服务器之间内网通信。</li>
 </ol>
 
-      
     </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/09/10/广播服压测总结/" data-id="cjlvo0oq200064svnqt5svf97" class="article-share-link">Share</a>
+
+    
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">Author</span>
+    <span class="item-content">wangkm</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">LastMod</span>
+    <span class="item-content">2018/09/10</span>
+  </p>
+  
+  
+</div>
+
+    
+    
+
+    <footer class="post-footer">
       
+
       
+      <nav class="post-nav">
+        
+        
+          <a class="next" href="/2018/08/13/%E6%B8%B8%E6%88%8F%E4%BB%BB%E5%8A%A1%E7%B3%BB%E7%BB%9F%E7%9A%84%E8%AE%BE%E8%AE%A1%E4%B8%8B/">
+            <span class="next-text nav-default">游戏任务系统的设计(下)</span>
+            <span class="next-text nav-mobile">Next</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
     </footer>
-  </div>
+  </article>
+        </div>
+        
   
-    
-<nav id="article-nav">
-  
-  
-    <a href="/2018/08/13/游戏任务系统的设计(下)/" id="article-nav-older" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">Older</strong>
-      <div class="article-nav-title">游戏任务系统的设计(下)</div>
-    </a>
-  
-</nav>
 
   
-</article>
 
-</section>
-        
-          <aside id="sidebar">
-  
-    
-
-  
-    
-
-  
-    
-  
-    
-  <div class="widget-wrap">
-    <h3 class="widget-title">Archives</h3>
-    <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/09/">September 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">August 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">July 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">June 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">May 2018</a></li></ul>
-    </div>
-  </div>
-
-
-  
-    
-  <div class="widget-wrap">
-    <h3 class="widget-title">Recent Posts</h3>
-    <div class="widget">
-      <ul>
-        
-          <li>
-            <a href="/2018/09/10/广播服压测总结/">广播服压测总结</a>
-          </li>
-        
-          <li>
-            <a href="/2018/08/13/游戏任务系统的设计(下)/">游戏任务系统的设计(下)</a>
-          </li>
-        
-          <li>
-            <a href="/2018/08/06/基于RPC的分布式广播服设计思路/">基于RPC的分布式广播服设计思路</a>
-          </li>
-        
-          <li>
-            <a href="/2018/07/31/提问的智慧-读书笔记/">提问的智慧-读书笔记</a>
-          </li>
-        
-          <li>
-            <a href="/2018/07/26/玩家定时器模块的设计与实现/">玩家定时器模块的设计与实现</a>
-          </li>
-        
-      </ul>
-    </div>
-  </div>
-
-  
-</aside>
-        
       </div>
-      <footer id="footer">
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:your@email.com" class="iconfont icon-email" title="email"></a>
+      <a href="http://localhost:1313" class="iconfont icon-stack-overflow" title="stack-overflow"></a>
+      <a href="http://localhost:1313" class="iconfont icon-twitter" title="twitter"></a>
+      <a href="http://localhost:1313" class="iconfont icon-facebook" title="facebook"></a>
+      <a href="http://localhost:1313" class="iconfont icon-linkedin" title="linkedin"></a>
+      <a href="http://localhost:1313" class="iconfont icon-google" title="google"></a>
+      <a href="http://localhost:1313" class="iconfont icon-github" title="github"></a>
+      <a href="http://localhost:1313" class="iconfont icon-weibo" title="weibo"></a>
+      <a href="http://localhost:1313" class="iconfont icon-zhihu" title="zhihu"></a>
+      <a href="http://localhost:1313" class="iconfont icon-douban" title="douban"></a>
+      <a href="http://localhost:1313" class="iconfont icon-pocket" title="pocket"></a>
+      <a href="http://localhost:1313" class="iconfont icon-tumblr" title="tumblr"></a>
+      <a href="http://localhost:1313" class="iconfont icon-instagram" title="instagram"></a>
+  <a href="https://wangkunmeng.github.io/index.xml" type="application/rss+xml" class="iconfont icon-rss" title="rss"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    Powered by <a class="hexo-link" href="https://gohugo.io">Hugo</a>
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    Theme - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
   
-  <div class="outer">
-    <div id="footer-info" class="inner">
-      &copy; 2018 wangkm<br>
-      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+
+  <span class="copyright-year">
+    &copy; 
+    2018
+    <span class="heart">
+      <i class="iconfont icon-heart"></i>
+    </span>
+    <span class="author">wangkm</span>
+  </span>
+</div>
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
     </div>
   </div>
-</footer>
-    </div>
-    <nav id="mobile-nav">
   
-    <a href="/" class="mobile-nav-link">Home</a>
-  
-    <a href="/archives" class="mobile-nav-link">Archives</a>
-  
-</nav>
-    
-
-<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+<script src="/lib/highlight/highlight.pack.js?v=20171001"></script><script type="text/javascript" src="/lib/jquery/jquery-3.2.1.min.js"></script>
+  <script type="text/javascript" src="/lib/slideout/slideout-1.0.1.min.js"></script>
+  <script type="text/javascript" src="/lib/fancybox/jquery.fancybox-3.1.20.min.js"></script>
 
 
-  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
-  <script src="/fancybox/jquery.fancybox.pack.js"></script>
-
-
-<script src="/js/script.js"></script>
+<script type="text/javascript" src="/dist/even.min.js?v=3.2.0"></script>
 
 
 
-  </div>
+
+
+
+
+
 </body>
 </html>

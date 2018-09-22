@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Even - A super concise theme for Hugo</title>
+    <link>https://wangkunmeng.github.io/</link>
+    <description>Recent content on Even - A super concise theme for Hugo</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en</language>
+    <lastBuildDate>Mon, 10 Sep 2018 10:24:50 +0000</lastBuildDate>
+    
+	<atom:link href="https://wangkunmeng.github.io/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>广播服压测总结</title>
+      <link>https://wangkunmeng.github.io/2018/09/10/%E5%B9%BF%E6%92%AD%E6%9C%8D%E5%8E%8B%E6%B5%8B%E6%80%BB%E7%BB%93/</link>
+      <pubDate>Mon, 10 Sep 2018 10:24:50 +0000</pubDate>
+      
+      <guid>https://wangkunmeng.github.io/2018/09/10/%E5%B9%BF%E6%92%AD%E6%9C%8D%E5%8E%8B%E6%B5%8B%E6%80%BB%E7%BB%93/</guid>
+      <description>前言 游戏即将上线，本周对广播服进行压力测试，不断调整代码，最终达成了单进程2000人的目标。一些注意事项和大家分享下。 服务端策略 采用集群方式</description>
+    </item>
+    
+    <item>
+      <title>游戏任务系统的设计(下)</title>
+      <link>https://wangkunmeng.github.io/2018/08/13/%E6%B8%B8%E6%88%8F%E4%BB%BB%E5%8A%A1%E7%B3%BB%E7%BB%9F%E7%9A%84%E8%AE%BE%E8%AE%A1%E4%B8%8B/</link>
+      <pubDate>Mon, 13 Aug 2018 10:15:37 +0000</pubDate>
+      
+      <guid>https://wangkunmeng.github.io/2018/08/13/%E6%B8%B8%E6%88%8F%E4%BB%BB%E5%8A%A1%E7%B3%BB%E7%BB%9F%E7%9A%84%E8%AE%BE%E8%AE%A1%E4%B8%8B/</guid>
+      <description>前言 刚水好的一篇博客被VSCode吞了，也是够够的，好吧我重来。 本打算分享一下这周内做的GRpc的简单封装呢，手里没代码，那就先把任务系统了</description>
+    </item>
+    
+    <item>
+      <title>基于RPC的分布式广播服设计思路</title>
+      <link>https://wangkunmeng.github.io/2018/08/06/%E5%9F%BA%E4%BA%8ERPC%E7%9A%84%E5%88%86%E5%B8%83%E5%BC%8F%E5%B9%BF%E6%92%AD%E6%9C%8D%E8%AE%BE%E8%AE%A1%E6%80%9D%E8%B7%AF/</link>
+      <pubDate>Mon, 06 Aug 2018 10:21:00 +0000</pubDate>
+      
+      <guid>https://wangkunmeng.github.io/2018/08/06/%E5%9F%BA%E4%BA%8ERPC%E7%9A%84%E5%88%86%E5%B8%83%E5%BC%8F%E5%B9%BF%E6%92%AD%E6%9C%8D%E8%AE%BE%E8%AE%A1%E6%80%9D%E8%B7%AF/</guid>
+      <description>前言 先前设计了一种基于Redis的分布式广播服，实际项目运行一段时间后，有几个问题需要面对 整体依赖Redis整个广播服的压力受限于Redis</description>
+    </item>
+    
+    <item>
+      <title>提问的智慧-读书笔记</title>
+      <link>https://wangkunmeng.github.io/2018/07/31/%E6%8F%90%E9%97%AE%E7%9A%84%E6%99%BA%E6%85%A7-%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/</link>
+      <pubDate>Tue, 31 Jul 2018 10:24:24 +0000</pubDate>
+      
+      <guid>https://wangkunmeng.github.io/2018/07/31/%E6%8F%90%E9%97%AE%E7%9A%84%E6%99%BA%E6%85%A7-%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/</guid>
+      <description>前言 作为一名光荣的程序猿，我们使用不同的开发工具来创建自己的世界。本文主要讲解当我们使用工具出现问题时出现问题时，我们应该如何高效的提问问题</description>
+    </item>
+    
+    <item>
+      <title>玩家定时器模块的设计与实现</title>
+      <link>https://wangkunmeng.github.io/2018/07/26/%E7%8E%A9%E5%AE%B6%E5%AE%9A%E6%97%B6%E5%99%A8%E6%A8%A1%E5%9D%97%E7%9A%84%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0/</link>
+      <pubDate>Thu, 26 Jul 2018 12:51:35 +0000</pubDate>
+      
+      <guid>https://wangkunmeng.github.io/2018/07/26/%E7%8E%A9%E5%AE%B6%E5%AE%9A%E6%97%B6%E5%99%A8%E6%A8%A1%E5%9D%97%E7%9A%84%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0/</guid>
+      <description>前言 游戏开发中，玩家一些定时刷新的物品、任务，若每个对象都增加一个setTimeout函数，数量就很恐怖了，尤其是玩家数量一多就更废了。本文</description>
+    </item>
+    
+    <item>
+      <title>游戏任务系统的设计(上</title>
+      <link>https://wangkunmeng.github.io/2018/07/16/%E6%B8%B8%E6%88%8F%E4%BB%BB%E5%8A%A1%E7%B3%BB%E7%BB%9F%E7%9A%84%E8%AE%BE%E8%AE%A1%E4%B8%8A/</link>
+      <pubDate>Mon, 16 Jul 2018 10:49:27 +0000</pubDate>
+      
+      <guid>https://wangkunmeng.github.io/2018/07/16/%E6%B8%B8%E6%88%8F%E4%BB%BB%E5%8A%A1%E7%B3%BB%E7%BB%9F%E7%9A%84%E8%AE%BE%E8%AE%A1%E4%B8%8A/</guid>
+      <description>前言 忙忙碌碌地又一周过去了，又到了每周博客的时间了，这一周疲惫地推各种功能，没带脑子思考，又没心思用半天时间做一个新的功能探讨，终了翻了翻以</description>
+    </item>
+    
+    <item>
+      <title>使用消息字典做消息校验</title>
+      <link>https://wangkunmeng.github.io/2018/07/09/%E4%BD%BF%E7%94%A8%E6%B6%88%E6%81%AF%E5%AD%97%E5%85%B8%E5%81%9A%E6%B6%88%E6%81%AF%E6%A0%A1%E9%AA%8C/</link>
+      <pubDate>Mon, 09 Jul 2018 10:06:53 +0000</pubDate>
+      
+      <guid>https://wangkunmeng.github.io/2018/07/09/%E4%BD%BF%E7%94%A8%E6%B6%88%E6%81%AF%E5%AD%97%E5%85%B8%E5%81%9A%E6%B6%88%E6%81%AF%E6%A0%A1%E9%AA%8C/</guid>
+      <description>前言 基于Http通信的游戏服务器和客户端一般首选JSON作为数据传输格式，通信参数校验是很琐碎的事。往往一些人为利用的BUG都与没有正确的参</description>
+    </item>
+    
+    <item>
+      <title>基于json格式的玩家数据兼容</title>
+      <link>https://wangkunmeng.github.io/2018/07/02/%E5%9F%BA%E4%BA%8Ejson%E6%A0%BC%E5%BC%8F%E7%9A%84%E7%8E%A9%E5%AE%B6%E6%95%B0%E6%8D%AE%E5%85%BC%E5%AE%B9/</link>
+      <pubDate>Mon, 02 Jul 2018 10:14:29 +0000</pubDate>
+      
+      <guid>https://wangkunmeng.github.io/2018/07/02/%E5%9F%BA%E4%BA%8Ejson%E6%A0%BC%E5%BC%8F%E7%9A%84%E7%8E%A9%E5%AE%B6%E6%95%B0%E6%8D%AE%E5%85%BC%E5%AE%B9/</guid>
+      <description>前言 游戏开发中，玩家数据格式不是一成不变的，保证玩家数据格式变更后玩家上线后依然能够进行游戏是基本原则。 本文主要阐述数据库是Mysql时，以</description>
+    </item>
+    
+    <item>
+      <title>NodeJS公会服的设计思路</title>
+      <link>https://wangkunmeng.github.io/2018/06/25/NodeJS%E5%85%AC%E4%BC%9A%E6%9C%8D%E7%9A%84%E8%AE%BE%E8%AE%A1%E6%80%9D%E8%B7%AF/</link>
+      <pubDate>Mon, 25 Jun 2018 09:55:34 +0000</pubDate>
+      
+      <guid>https://wangkunmeng.github.io/2018/06/25/NodeJS%E5%85%AC%E4%BC%9A%E6%9C%8D%E7%9A%84%E8%AE%BE%E8%AE%A1%E6%80%9D%E8%B7%AF/</guid>
+      <description>前言 公会是游戏功能中玩家数据交互最为频繁的一个功能，如何让多个玩家操作同一份数据有序而不出错是个很值得非常重要的问题。NodeJS服务器由于</description>
+    </item>
+    
+    <item>
+      <title>NodeJS基于Redis广播服的设计思路</title>
+      <link>https://wangkunmeng.github.io/2018/06/20/NodeJS%E5%9F%BA%E4%BA%8ERedis%E5%B9%BF%E6%92%AD%E6%9C%8D%E7%9A%84%E8%AE%BE%E8%AE%A1%E6%80%9D%E8%B7%AF/</link>
+      <pubDate>Wed, 20 Jun 2018 13:14:43 +0000</pubDate>
+      
+      <guid>https://wangkunmeng.github.io/2018/06/20/NodeJS%E5%9F%BA%E4%BA%8ERedis%E5%B9%BF%E6%92%AD%E6%9C%8D%E7%9A%84%E8%AE%BE%E8%AE%A1%E6%80%9D%E8%B7%AF/</guid>
+      <description>前言 分布式集群是NodeJS游戏服务端一个基本要素，多进程间玩家通讯是游戏服的一个核心问题。目前常见的多进程广播数据的方式一种是通过RPC，</description>
+    </item>
+    
+    <item>
+      <title>基于Json的数据同步</title>
+      <link>https://wangkunmeng.github.io/2018/06/14/%E5%9F%BA%E4%BA%8EJson%E7%9A%84%E6%95%B0%E6%8D%AE%E5%90%8C%E6%AD%A5/</link>
+      <pubDate>Thu, 14 Jun 2018 10:22:54 +0000</pubDate>
+      
+      <guid>https://wangkunmeng.github.io/2018/06/14/%E5%9F%BA%E4%BA%8EJson%E7%9A%84%E6%95%B0%E6%8D%AE%E5%90%8C%E6%AD%A5/</guid>
+      <description>前言 游戏服务器与客户端的数据同步，各家有各家的秘籍。下面我就分享一下http服务器和客户端基于JSON文件的数据同步的思路。 何时同步 http</description>
+    </item>
+    
+    <item>
+      <title>调试九法-笔记</title>
+      <link>https://wangkunmeng.github.io/2018/06/04/%E8%B0%83%E8%AF%95%E4%B9%9D%E6%B3%95-%E7%AC%94%E8%AE%B0/</link>
+      <pubDate>Mon, 04 Jun 2018 09:41:55 +0000</pubDate>
+      
+      <guid>https://wangkunmeng.github.io/2018/06/04/%E8%B0%83%E8%AF%95%E4%B9%9D%E6%B3%95-%E7%AC%94%E8%AE%B0/</guid>
+      <description>前言 软件开发者路线图看完以后，我开启了接下来的读书之路。一周时间准确的说是6天终于拿下这个山头。 废话不多说，这本书是一本从事编程行业一本经典</description>
+    </item>
+    
+    <item>
+      <title>学习计划</title>
+      <link>https://wangkunmeng.github.io/2018/05/30/%E5%AD%A6%E4%B9%A0%E8%AE%A1%E5%88%92/</link>
+      <pubDate>Wed, 30 May 2018 09:49:41 +0000</pubDate>
+      
+      <guid>https://wangkunmeng.github.io/2018/05/30/%E5%AD%A6%E4%B9%A0%E8%AE%A1%E5%88%92/</guid>
+      <description>前言 近阶段的理想学习规划——千里之行，屎于足下 计划 1.读书 调试九法-软硬件错误排查之道 时间：7~9天 2.学习 ES标准内async/await</description>
+    </item>
+    
+    <item>
+      <title>书籍目录</title>
+      <link>https://wangkunmeng.github.io/2018/05/30/%E4%B9%A6%E7%B1%8D%E7%9B%AE%E5%BD%95/</link>
+      <pubDate>Wed, 30 May 2018 09:33:45 +0000</pubDate>
+      
+      <guid>https://wangkunmeng.github.io/2018/05/30/%E4%B9%A6%E7%B1%8D%E7%9B%AE%E5%BD%95/</guid>
+      <description>摘要 记录读过的书，和即将读的书 今年已读 深入浅出的NodeJS 朴灵 经典必读 ES6 标准入门(第三版) 阮一峰 入门必读 NodeJS实战 T.J 过时不推荐 软件开</description>
+    </item>
+    
+    <item>
+      <title>软件开发者路线图-笔记</title>
+      <link>https://wangkunmeng.github.io/2018/05/25/%E8%BD%AF%E4%BB%B6%E5%BC%80%E5%8F%91%E8%80%85%E8%B7%AF%E7%BA%BF%E5%9B%BE-%E7%AC%94%E8%AE%B0/</link>
+      <pubDate>Fri, 25 May 2018 10:05:46 +0000</pubDate>
+      
+      <guid>https://wangkunmeng.github.io/2018/05/25/%E8%BD%AF%E4%BB%B6%E5%BC%80%E5%8F%91%E8%80%85%E8%B7%AF%E7%BA%BF%E5%9B%BE-%E7%AC%94%E8%AE%B0/</guid>
+      <description>前言 程序员，作为一个比较自律的技术工种，我是抱着怀疑的态度拿起了这本书——软件开发者都应读的书。工作之余，6天时间此书扫描一遍，此书还是干货</description>
+    </item>
+    
+  </channel>
+</rss>

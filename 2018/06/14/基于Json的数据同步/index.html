@@ -1,224 +1,417 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="utf-8">
-  
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>基于Json的数据同步 - Even - A super concise theme for Hugo</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
 
-  
-  <title>基于Json的数据同步 | wangkm&#39;s blog</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="前言游戏服务器与客户端的数据同步，各家有各家的秘籍。下面我就分享一下http服务器和客户端基于JSON文件的数据同步的思路。 何时同步http短连接，就是每次返回客户端消息时，包同步数据带回去。同步数据放到消息返回前。 Json文件制作和格式剖析123456789101112131415161718192021222324252627282930card.json&amp;#123;    TagName">
-<meta property="og:type" content="article">
-<meta property="og:title" content="基于Json的数据同步">
-<meta property="og:url" content="http://yoursite.com/2018/06/14/基于Json的数据同步/index.html">
-<meta property="og:site_name" content="wangkm&#39;s blog">
-<meta property="og:description" content="前言游戏服务器与客户端的数据同步，各家有各家的秘籍。下面我就分享一下http服务器和客户端基于JSON文件的数据同步的思路。 何时同步http短连接，就是每次返回客户端消息时，包同步数据带回去。同步数据放到消息返回前。 Json文件制作和格式剖析123456789101112131415161718192021222324252627282930card.json&amp;#123;    TagName">
-<meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2018-06-25T06:03:14.136Z">
-<meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="基于Json的数据同步">
-<meta name="twitter:description" content="前言游戏服务器与客户端的数据同步，各家有各家的秘籍。下面我就分享一下http服务器和客户端基于JSON文件的数据同步的思路。 何时同步http短连接，就是每次返回客户端消息时，包同步数据带回去。同步数据放到消息返回前。 Json文件制作和格式剖析123456789101112131415161718192021222324252627282930card.json&amp;#123;    TagName">
-  
-    <link rel="alternate" href="/atom.xml" title="wangkm&#39;s blog" type="application/atom+xml">
-  
-  
-    <link rel="icon" href="/favicon.png">
-  
-  
-    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
-  
-  <link rel="stylesheet" href="/css/style.css">
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="wangkm" />
+  <meta name="description" content="前言 游戏服务器与客户端的数据同步，各家有各家的秘籍。下面我就分享一下http服务器和客户端基于JSON文件的数据同步的思路。 何时同步 http" />
+
+  <meta name="keywords" content="Node, wangkunmeng, 服务器" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.48" />
+
+
+<link rel="canonical" href="https://wangkunmeng.github.io/2018/06/14/%E5%9F%BA%E4%BA%8EJson%E7%9A%84%E6%95%B0%E6%8D%AE%E5%90%8C%E6%AD%A5/" />
+
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+
+
+
+
+<link href="/dist/even.min.css?v=3.2.0" rel="stylesheet">
+<link href="/lib/fancybox/jquery.fancybox-3.1.20.min.css" rel="stylesheet">
+
+
+
+
+<meta property="og:title" content="基于Json的数据同步" />
+<meta property="og:description" content="前言 游戏服务器与客户端的数据同步，各家有各家的秘籍。下面我就分享一下http服务器和客户端基于JSON文件的数据同步的思路。 何时同步 http" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://wangkunmeng.github.io/2018/06/14/%E5%9F%BA%E4%BA%8EJson%E7%9A%84%E6%95%B0%E6%8D%AE%E5%90%8C%E6%AD%A5/" /><meta property="article:published_time" content="2018-06-14T10:22:54&#43;00:00"/>
+<meta property="article:modified_time" content="2018-06-14T10:22:54&#43;00:00"/>
+<meta itemprop="name" content="基于Json的数据同步">
+<meta itemprop="description" content="前言 游戏服务器与客户端的数据同步，各家有各家的秘籍。下面我就分享一下http服务器和客户端基于JSON文件的数据同步的思路。 何时同步 http">
+
+
+<meta itemprop="datePublished" content="2018-06-14T10:22:54&#43;00:00" />
+<meta itemprop="dateModified" content="2018-06-14T10:22:54&#43;00:00" />
+<meta itemprop="wordCount" content="1208">
+
+
+
+<meta itemprop="keywords" content="" />
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="基于Json的数据同步"/>
+<meta name="twitter:description" content="前言 游戏服务器与客户端的数据同步，各家有各家的秘籍。下面我就分享一下http服务器和客户端基于JSON文件的数据同步的思路。 何时同步 http"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
 </head>
-
 <body>
-  <div id="container">
-    <div id="wrap">
-      <header id="header">
-  <div id="banner"></div>
-  <div id="header-outer" class="outer">
-    <div id="header-title" class="inner">
-      <h1 id="logo-wrap">
-        <a href="/" id="logo">wangkm&#39;s blog</a>
-      </h1>
-      
-    </div>
-    <div id="header-inner" class="inner">
-      <nav id="main-nav">
-        <a id="main-nav-toggle" class="nav-icon"></a>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">wangkm&#39;s blog</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <a href="/">
+        <li class="mobile-menu-item">Home</li>
+      </a><a href="/post/">
+        <li class="mobile-menu-item">Archives</li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">Tags</li>
+      </a><a href="/categories/">
+        <li class="mobile-menu-item">Categories</li>
+      </a>
+  </ul>
+</nav>
+  <div class="container" id="mobile-panel">
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">wangkm&#39;s blog</a>
+</div>
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">Home</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/post/">Archives</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/tags/">Tags</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/categories/">Categories</a>
+      </li>
+  </ul>
+</nav>
+    </header>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">基于Json的数据同步</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2018/06/14 </span>
         
-          <a class="main-nav-link" href="/">Home</a>
+        <span class="more-meta"> 1208 words </span>
+        <span class="more-meta"> 3 mins read </span>
         
-          <a class="main-nav-link" href="/archives">Archives</a>
-        
-      </nav>
-      <nav id="sub-nav">
-        
-          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
-        
-        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
-      </nav>
-      <div id="search-form-wrap">
-        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
       </div>
+    </header>
+
+    
+    
+<div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">Contents</h2>
+  
+  <div class="post-toc-content always-active">
+    <nav id="TableOfContents">
+<ul>
+<li><a href="#前言">前言</a>
+<ul>
+<li><a href="#何时同步">何时同步</a></li>
+<li><a href="#json文件制作和格式剖析">Json文件制作和格式剖析</a></li>
+<li><a href="#json文件设计对应obj格式">Json文件设计对应Obj格式</a></li>
+<li><a href="#同步的类型">同步的类型</a>
+<ul>
+<li><a href="#增加">增加</a></li>
+<li><a href="#删除">删除</a></li>
+<li><a href="#更新">更新</a></li>
+</ul></li>
+<li><a href="#同步的基础规则">同步的基础规则</a></li>
+</ul></li>
+<li><a href="#结束语">结束语</a></li>
+</ul>
+</nav>
+  </div>
+</div>
+
+    
+    
+
+    
+    <div class="post-content">
+      
+
+<h1 id="前言">前言</h1>
+
+<p>游戏服务器与客户端的数据同步，各家有各家的秘籍。下面我就分享一下http服务器和客户端基于JSON文件的数据同步的思路。</p>
+
+<h2 id="何时同步">何时同步</h2>
+
+<p>http短连接，就是每次返回客户端消息时，包同步数据带回去。同步数据放到消息返回前。</p>
+
+<h2 id="json文件制作和格式剖析">Json文件制作和格式剖析</h2>
+
+<pre><code class="language-json">card.json
+{
+    TagName: card //此为json标识，前后端解析识别
+    keys: [ //keys为Json具体数据键值
+        {
+            keyName: 'GUID',
+            comment: '唯一ID', //同步数据时用户标识此OBj，全局唯一
+            type: 'String',
+            value: ''
+        },
+        {
+            keyName: 'uid', 
+            comment: '玩家UID', //基本说明，利于维护
+            type: 'Number', //数据类型，可做基本校验
+            value: 10000, //初始数据默认值,
+        },
+        {
+            keyName: 'level',
+            comment: '等级',
+            type: 'Number',
+            value: 0
+        },
+        {
+            keyName: 'ctSkin',
+            comment: '皮肤',
+            type: 'Array',
+            value: []
+        }
+    ]
+}
+</code></pre>
+
+<h2 id="json文件设计对应obj格式">Json文件设计对应Obj格式</h2>
+
+<p>简单描述下，JSON文件对应的Obj对象怎么设计</p>
+
+<pre><code class="language-js">{
+    tagName: card, //obj对应JSON文件名字
+    keyIndex: { //同步时需要记录变更的数据位置，比直接传keyName要好
+        GUID:0,
+        uid：1,
+        level: 2,
+        ctSkin: 3,
+    },
+    keyValue: ['10001@10000', 10000,  5, []] //本地保存，此OBj所有数据
+    changeKeys: [2] //变更了那些Key
+    function syncChangeToClient () {
+        //简单的算法对应完毕
+        [变更的JSON原型对应怎么解析，[[变更的位置，变更后数据格式]，[变更的位置，变更后数据格式]]，全局索引GUID（用来和多个卡牌做区分）]
+        //卡牌'10001@10000'索引的对象，数据1位置变更为10
+        return ['card', [[1, 10]], '10001@10000'],
+    }
+    function syncToClient () {
+        //简单的算法对应完毕
+        [JSON原型名字，[当前所有数据]]
+        return ['card', ['10001@10000', 10000,  5, []]],
+    }
+}
+</code></pre>
+
+<h2 id="同步的类型">同步的类型</h2>
+
+<p>同步需要只要需要3个数据表示出，增加[1]、删除[2]、更新[3]</p>
+
+<h3 id="增加">增加</h3>
+
+<p>这种增加，一般都是把新生成Obj全部同步给客户端。
+eg:</p>
+
+<pre><code class="language-js">{
+    1:[ //数组，为了支持一次同步所有增加、删除、更新
+        obj.syncToClient();//每一个增加的对象
+        obj.syncToClient();//每一个增加的对象
+        ...
+    ]
+}
+</code></pre>
+
+<h3 id="删除">删除</h3>
+
+<p>删除Obj一般只需要提供tagName外加GUID即可
+eg:</p>
+
+<pre><code class="language-js">{
+    2:[ //数组，为了支持一次同步所有增加、删除、更新
+        [
+            card，'10001@10000'
+        ],
+        ...
+    ]
+}
+</code></pre>
+
+<h3 id="更新">更新</h3>
+
+<p>更新需要提供tagName,GUID,以及每个更新的Key索引和最后的值
+eg:</p>
+
+<pre><code class="language-js">{
+    3:[ //数组，为了支持一次同步所有增加、删除、更新
+        obj.syncChangeToClient();//每一个更新的对象
+        obj.syncChangeToClient();//每一个更新的对象
+    ]
+}
+</code></pre>
+
+<h2 id="同步的基础规则">同步的基础规则</h2>
+
+<p>1.更新后删除的,数据不同步更新的字段，只同步删除
+2.单个Obj多次更新的，每个Key只同步最后值，一次同步完毕
+3.增加后更新的，只同步增加全部属性
+4.增加后删除的，不同步数据
+5.删除又增加的，理论不出现，但要同步增加的数据
+6.增加、同步、删除各个key内有数据才有，比如只有增加同步只需key1就行,都有的话，就是{1：[]，2：[]，3：[]}
+7.每次同步完毕都要清除本书数据变更状态</p>
+
+<h1 id="结束语">结束语</h1>
+
+<p>思路还是比较乱，设计还是不是很成熟。终究是没有实际代码去验证，自己也很遗憾，等后续有成品东西出来，再接着验证去分享。</p>
+
     </div>
-  </div>
-</header>
-      <div class="outer">
-        <section id="main"><article id="post-基于Json的数据同步" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2018/06/14/基于Json的数据同步/" class="article-date">
-  <time datetime="2018-06-14T02:22:54.000Z" itemprop="datePublished">2018-06-14</time>
-</a>
+
     
-  </div>
-  <div class="article-inner">
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">Author</span>
+    <span class="item-content">wangkm</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">LastMod</span>
+    <span class="item-content">2018/06/14</span>
+  </p>
+  
+  
+</div>
+
     
     
-      <header class="article-header">
+
+    <footer class="post-footer">
+      
+
+      
+      <nav class="post-nav">
         
-  
-    <h1 class="article-title" itemprop="name">
-      基于Json的数据同步
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>游戏服务器与客户端的数据同步，各家有各家的秘籍。下面我就分享一下http服务器和客户端基于JSON文件的数据同步的思路。</p>
-<h2 id="何时同步"><a href="#何时同步" class="headerlink" title="何时同步"></a>何时同步</h2><p>http短连接，就是每次返回客户端消息时，包同步数据带回去。同步数据放到消息返回前。</p>
-<h2 id="Json文件制作和格式剖析"><a href="#Json文件制作和格式剖析" class="headerlink" title="Json文件制作和格式剖析"></a>Json文件制作和格式剖析</h2><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">card.json</span><br><span class="line">&#123;</span><br><span class="line">    TagName: card //此为json标识，前后端解析识别</span><br><span class="line">    keys: [ //keys为Json具体数据键值</span><br><span class="line">        &#123;</span><br><span class="line">            keyName: 'GUID',</span><br><span class="line">            comment: '唯一ID', //同步数据时用户标识此OBj，全局唯一</span><br><span class="line">            type: 'String',</span><br><span class="line">            value: ''</span><br><span class="line">        &#125;,</span><br><span class="line">        &#123;</span><br><span class="line">            keyName: 'uid', </span><br><span class="line">            comment: '玩家UID', //基本说明，利于维护</span><br><span class="line">            type: 'Number', //数据类型，可做基本校验</span><br><span class="line">            value: 10000, //初始数据默认值,</span><br><span class="line">        &#125;,</span><br><span class="line">        &#123;</span><br><span class="line">            keyName: 'level',</span><br><span class="line">            comment: '等级',</span><br><span class="line">            type: 'Number',</span><br><span class="line">            value: 0</span><br><span class="line">        &#125;,</span><br><span class="line">        &#123;</span><br><span class="line">            keyName: 'ctSkin',</span><br><span class="line">            comment: '皮肤',</span><br><span class="line">            type: 'Array',</span><br><span class="line">            value: []</span><br><span class="line">        &#125;</span><br><span class="line">    ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h2 id="Json文件设计对应Obj格式"><a href="#Json文件设计对应Obj格式" class="headerlink" title="Json文件设计对应Obj格式"></a>Json文件设计对应Obj格式</h2><p>简单描述下，JSON文件对应的Obj对象怎么设计</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    tagName: card, <span class="comment">//obj对应JSON文件名字</span></span><br><span class="line">    keyIndex: &#123; <span class="comment">//同步时需要记录变更的数据位置，比直接传keyName要好</span></span><br><span class="line">        GUID:<span class="number">0</span>,</span><br><span class="line">        uid：<span class="number">1</span>,</span><br><span class="line">        level: <span class="number">2</span>,</span><br><span class="line">        ctSkin: <span class="number">3</span>,</span><br><span class="line">    &#125;,</span><br><span class="line">    keyValue: [<span class="string">'10001@10000'</span>, <span class="number">10000</span>,  <span class="number">5</span>, []] <span class="comment">//本地保存，此OBj所有数据</span></span><br><span class="line">    changeKeys: [<span class="number">2</span>] <span class="comment">//变更了那些Key</span></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">syncChangeToClient</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="comment">//简单的算法对应完毕</span></span><br><span class="line">        [变更的<span class="built_in">JSON</span>原型对应怎么解析，[[变更的位置，变更后数据格式]，[变更的位置，变更后数据格式]]，全局索引GUID（用来和多个卡牌做区分）]</span><br><span class="line">        <span class="comment">//卡牌'10001@10000'索引的对象，数据1位置变更为10</span></span><br><span class="line">        <span class="keyword">return</span> [<span class="string">'card'</span>, [[<span class="number">1</span>, <span class="number">10</span>]], <span class="string">'10001@10000'</span>],</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">syncToClient</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="comment">//简单的算法对应完毕</span></span><br><span class="line">        [<span class="built_in">JSON</span>原型名字，[当前所有数据]]</span><br><span class="line">        <span class="keyword">return</span> [<span class="string">'card'</span>, [<span class="string">'10001@10000'</span>, <span class="number">10000</span>,  <span class="number">5</span>, []]],</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h2 id="同步的类型"><a href="#同步的类型" class="headerlink" title="同步的类型"></a>同步的类型</h2><p>同步需要只要需要3个数据表示出，增加[1]、删除[2]、更新[3]</p>
-<h3 id="增加"><a href="#增加" class="headerlink" title="增加"></a>增加</h3><p>这种增加，一般都是把新生成Obj全部同步给客户端。<br>eg:</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="number">1</span>:[ <span class="comment">//数组，为了支持一次同步所有增加、删除、更新</span></span><br><span class="line">        obj.syncToClient();<span class="comment">//每一个增加的对象</span></span><br><span class="line">        obj.syncToClient();<span class="comment">//每一个增加的对象</span></span><br><span class="line">        ...</span><br><span class="line">    ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="删除"><a href="#删除" class="headerlink" title="删除"></a>删除</h3><p>删除Obj一般只需要提供tagName外加GUID即可<br>eg:</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="number">2</span>:[ <span class="comment">//数组，为了支持一次同步所有增加、删除、更新</span></span><br><span class="line">        [</span><br><span class="line">            card，<span class="string">'10001@10000'</span></span><br><span class="line">        ],</span><br><span class="line">        ...</span><br><span class="line">    ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h3 id="更新"><a href="#更新" class="headerlink" title="更新"></a>更新</h3><p>更新需要提供tagName,GUID,以及每个更新的Key索引和最后的值<br>eg:</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="number">3</span>:[ <span class="comment">//数组，为了支持一次同步所有增加、删除、更新</span></span><br><span class="line">        obj.syncChangeToClient();<span class="comment">//每一个更新的对象</span></span><br><span class="line">        obj.syncChangeToClient();<span class="comment">//每一个更新的对象</span></span><br><span class="line">    ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h2 id="同步的基础规则"><a href="#同步的基础规则" class="headerlink" title="同步的基础规则"></a>同步的基础规则</h2><p>1.更新后删除的,数据不同步更新的字段，只同步删除<br>2.单个Obj多次更新的，每个Key只同步最后值，一次同步完毕<br>3.增加后更新的，只同步增加全部属性<br>4.增加后删除的，不同步数据<br>5.删除又增加的，理论不出现，但要同步增加的数据<br>6.增加、同步、删除各个key内有数据才有，比如只有增加同步只需key1就行,都有的话，就是{1：[]，2：[]，3：[]}<br>7.每次同步完毕都要清除本书数据变更状态</p>
-<h1 id="结束语"><a href="#结束语" class="headerlink" title="结束语"></a>结束语</h1><p>思路还是比较乱，设计还是不是很成熟。终究是没有实际代码去验证，自己也很遗憾，等后续有成品东西出来，再接着验证去分享。</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2018/06/14/基于Json的数据同步/" data-id="cjlvo0oq100054svn2n72b2g0" class="article-share-link">Share</a>
-      
-      
+          <a class="prev" href="/2018/06/20/NodeJS%E5%9F%BA%E4%BA%8ERedis%E5%B9%BF%E6%92%AD%E6%9C%8D%E7%9A%84%E8%AE%BE%E8%AE%A1%E6%80%9D%E8%B7%AF/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">NodeJS基于Redis广播服的设计思路</span>
+            <span class="prev-text nav-mobile">Prev</span>
+          </a>
+        
+          <a class="next" href="/2018/06/04/%E8%B0%83%E8%AF%95%E4%B9%9D%E6%B3%95-%E7%AC%94%E8%AE%B0/">
+            <span class="next-text nav-default">调试九法-笔记</span>
+            <span class="next-text nav-mobile">Next</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
     </footer>
-  </div>
-  
-    
-<nav id="article-nav">
-  
-    <a href="/2018/06/20/NodeJS基于Redis广播服的设计思路/" id="article-nav-newer" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">Newer</strong>
-      <div class="article-nav-title">
+  </article>
+        </div>
         
-          NodeJS基于Redis广播服的设计思路
-        
+  
+
+  
+
       </div>
-    </a>
-  
-  
-    <a href="/2018/06/04/调试九法-笔记/" id="article-nav-older" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">Older</strong>
-      <div class="article-nav-title">调试九法-笔记</div>
-    </a>
-  
-</nav>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:your@email.com" class="iconfont icon-email" title="email"></a>
+      <a href="http://localhost:1313" class="iconfont icon-stack-overflow" title="stack-overflow"></a>
+      <a href="http://localhost:1313" class="iconfont icon-twitter" title="twitter"></a>
+      <a href="http://localhost:1313" class="iconfont icon-facebook" title="facebook"></a>
+      <a href="http://localhost:1313" class="iconfont icon-linkedin" title="linkedin"></a>
+      <a href="http://localhost:1313" class="iconfont icon-google" title="google"></a>
+      <a href="http://localhost:1313" class="iconfont icon-github" title="github"></a>
+      <a href="http://localhost:1313" class="iconfont icon-weibo" title="weibo"></a>
+      <a href="http://localhost:1313" class="iconfont icon-zhihu" title="zhihu"></a>
+      <a href="http://localhost:1313" class="iconfont icon-douban" title="douban"></a>
+      <a href="http://localhost:1313" class="iconfont icon-pocket" title="pocket"></a>
+      <a href="http://localhost:1313" class="iconfont icon-tumblr" title="tumblr"></a>
+      <a href="http://localhost:1313" class="iconfont icon-instagram" title="instagram"></a>
+  <a href="https://wangkunmeng.github.io/index.xml" type="application/rss+xml" class="iconfont icon-rss" title="rss"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    Powered by <a class="hexo-link" href="https://gohugo.io">Hugo</a>
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    Theme - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
 
   
-</article>
 
-</section>
-        
-          <aside id="sidebar">
-  
-    
+  <span class="copyright-year">
+    &copy; 
+    2018
+    <span class="heart">
+      <i class="iconfont icon-heart"></i>
+    </span>
+    <span class="author">wangkm</span>
+  </span>
+</div>
+    </footer>
 
-  
-    
-
-  
-    
-  
-    
-  <div class="widget-wrap">
-    <h3 class="widget-title">Archives</h3>
-    <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/09/">September 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">August 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">July 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">June 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">May 2018</a></li></ul>
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
     </div>
   </div>
-
-
   
-    
-  <div class="widget-wrap">
-    <h3 class="widget-title">Recent Posts</h3>
-    <div class="widget">
-      <ul>
-        
-          <li>
-            <a href="/2018/09/10/广播服压测总结/">广播服压测总结</a>
-          </li>
-        
-          <li>
-            <a href="/2018/08/13/游戏任务系统的设计(下)/">游戏任务系统的设计(下)</a>
-          </li>
-        
-          <li>
-            <a href="/2018/08/06/基于RPC的分布式广播服设计思路/">基于RPC的分布式广播服设计思路</a>
-          </li>
-        
-          <li>
-            <a href="/2018/07/31/提问的智慧-读书笔记/">提问的智慧-读书笔记</a>
-          </li>
-        
-          <li>
-            <a href="/2018/07/26/玩家定时器模块的设计与实现/">玩家定时器模块的设计与实现</a>
-          </li>
-        
-      </ul>
-    </div>
-  </div>
-
-  
-</aside>
-        
-      </div>
-      <footer id="footer">
-  
-  <div class="outer">
-    <div id="footer-info" class="inner">
-      &copy; 2018 wangkm<br>
-      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
-    </div>
-  </div>
-</footer>
-    </div>
-    <nav id="mobile-nav">
-  
-    <a href="/" class="mobile-nav-link">Home</a>
-  
-    <a href="/archives" class="mobile-nav-link">Archives</a>
-  
-</nav>
-    
-
-<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+<script src="/lib/highlight/highlight.pack.js?v=20171001"></script><script type="text/javascript" src="/lib/jquery/jquery-3.2.1.min.js"></script>
+  <script type="text/javascript" src="/lib/slideout/slideout-1.0.1.min.js"></script>
+  <script type="text/javascript" src="/lib/fancybox/jquery.fancybox-3.1.20.min.js"></script>
 
 
-  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
-  <script src="/fancybox/jquery.fancybox.pack.js"></script>
-
-
-<script src="/js/script.js"></script>
+<script type="text/javascript" src="/dist/even.min.js?v=3.2.0"></script>
 
 
 
-  </div>
+
+
+
+
+
 </body>
 </html>

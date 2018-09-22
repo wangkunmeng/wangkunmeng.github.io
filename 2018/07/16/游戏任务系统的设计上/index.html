@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>游戏任务系统的设计(上 - Even - A super concise theme for Hugo</title>
+  <meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+
+<meta name="author" content="wangkm" />
+  <meta name="description" content="前言 忙忙碌碌地又一周过去了，又到了每周博客的时间了，这一周疲惫地推各种功能，没带脑子思考，又没心思用半天时间做一个新的功能探讨，终了翻了翻以" />
+
+  <meta name="keywords" content="Node, wangkunmeng, 服务器" />
+
+
+
+
+
+
+<meta name="generator" content="Hugo 0.48" />
+
+
+<link rel="canonical" href="https://wangkunmeng.github.io/2018/07/16/%E6%B8%B8%E6%88%8F%E4%BB%BB%E5%8A%A1%E7%B3%BB%E7%BB%9F%E7%9A%84%E8%AE%BE%E8%AE%A1%E4%B8%8A/" />
+
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+
+
+
+
+<link href="/dist/even.min.css?v=3.2.0" rel="stylesheet">
+<link href="/lib/fancybox/jquery.fancybox-3.1.20.min.css" rel="stylesheet">
+
+
+
+
+<meta property="og:title" content="游戏任务系统的设计(上" />
+<meta property="og:description" content="前言 忙忙碌碌地又一周过去了，又到了每周博客的时间了，这一周疲惫地推各种功能，没带脑子思考，又没心思用半天时间做一个新的功能探讨，终了翻了翻以" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://wangkunmeng.github.io/2018/07/16/%E6%B8%B8%E6%88%8F%E4%BB%BB%E5%8A%A1%E7%B3%BB%E7%BB%9F%E7%9A%84%E8%AE%BE%E8%AE%A1%E4%B8%8A/" /><meta property="article:published_time" content="2018-07-16T10:49:27&#43;00:00"/>
+<meta property="article:modified_time" content="2018-07-16T10:49:27&#43;00:00"/>
+<meta itemprop="name" content="游戏任务系统的设计(上">
+<meta itemprop="description" content="前言 忙忙碌碌地又一周过去了，又到了每周博客的时间了，这一周疲惫地推各种功能，没带脑子思考，又没心思用半天时间做一个新的功能探讨，终了翻了翻以">
+
+
+<meta itemprop="datePublished" content="2018-07-16T10:49:27&#43;00:00" />
+<meta itemprop="dateModified" content="2018-07-16T10:49:27&#43;00:00" />
+<meta itemprop="wordCount" content="1716">
+
+
+
+<meta itemprop="keywords" content="" />
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="游戏任务系统的设计(上"/>
+<meta name="twitter:description" content="前言 忙忙碌碌地又一周过去了，又到了每周博客的时间了，这一周疲惫地推各种功能，没带脑子思考，又没心思用半天时间做一个新的功能探讨，终了翻了翻以"/>
+
+<!--[if lte IE 9]>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/classlist/1.1.20170427/classList.min.js"></script>
+<![endif]-->
+
+<!--[if lt IE 9]>
+  <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+<![endif]-->
+
+</head>
+<body>
+  <div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/" class="logo">wangkm&#39;s blog</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list">
+    <a href="/">
+        <li class="mobile-menu-item">Home</li>
+      </a><a href="/post/">
+        <li class="mobile-menu-item">Archives</li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">Tags</li>
+      </a><a href="/categories/">
+        <li class="mobile-menu-item">Categories</li>
+      </a>
+  </ul>
+</nav>
+  <div class="container" id="mobile-panel">
+    <header id="header" class="header">
+        <div class="logo-wrapper">
+  <a href="/" class="logo">wangkm&#39;s blog</a>
+</div>
+
+<nav class="site-navbar">
+  <ul id="menu" class="menu">
+    <li class="menu-item">
+        <a class="menu-item-link" href="/">Home</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/post/">Archives</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/tags/">Tags</a>
+      </li><li class="menu-item">
+        <a class="menu-item-link" href="/categories/">Categories</a>
+      </li>
+  </ul>
+</nav>
+    </header>
+
+    <main id="main" class="main">
+      <div class="content-wrapper">
+        <div id="content" class="content">
+          <article class="post">
+    
+    <header class="post-header">
+      <h1 class="post-title">游戏任务系统的设计(上</h1>
+
+      <div class="post-meta">
+        <span class="post-time"> 2018/07/16 </span>
+        
+        <span class="more-meta"> 1716 words </span>
+        <span class="more-meta"> 4 mins read </span>
+        
+      </div>
+    </header>
+
+    
+    
+<div class="post-toc" id="post-toc">
+  <h2 class="post-toc-title">Contents</h2>
+  
+  <div class="post-toc-content always-active">
+    <nav id="TableOfContents">
+<ul>
+<li><a href="#前言">前言</a>
+<ul>
+<li><a href="#需求">需求</a></li>
+<li><a href="#功能提取">功能提取</a></li>
+<li><a href="#设计实现">设计实现</a>
+<ul>
+<li><a href="#刷新">刷新</a></li>
+<li><a href="#任务类型分类">任务类型分类</a></li>
+<li><a href="#任务分发">任务分发</a></li>
+<li><a href="#任务记录">任务记录</a></li>
+<li><a href="#任务触发">任务触发</a>
+<ul>
+<li><a href="#登录触发">登录触发</a></li>
+<li><a href="#条件触发">条件触发</a></li>
+</ul></li>
+</ul></li>
+<li><a href="#小结">小结</a></li>
+</ul></li>
+</ul>
+</nav>
+  </div>
+</div>
+
+    
+    
+
+    
+    <div class="post-content">
+      
+
+<h1 id="前言">前言</h1>
+
+<p>忙忙碌碌地又一周过去了，又到了每周博客的时间了，这一周疲惫地推各种功能，没带脑子思考，又没心思用半天时间做一个新的功能探讨，终了翻了翻以前设计的功能，接下来就拿自己设计的任务系统做讲解了。</p>
+
+<h2 id="需求">需求</h2>
+
+<p>任务系统需求有三种：</p>
+
+<ul>
+<li>每日任务：每个任务有独立的奖励，每日还有活跃度，活跃度可以兑换奖励，任务有次数限制，每日凌晨3点刷新，并清除活跃度。</li>
+<li>周任务：周任务没有活跃度，除了个人奖励外，会增加公会积分，不可重复完成，每周一凌晨3点刷新。</li>
+<li>成就：主要奖励成就点（用于显示玩家水平的一种方式），成就不可刷新。</li>
+</ul>
+
+<p>任务类型分类：</p>
+
+<ul>
+<li>聊天：世界频道发送**条信息 (日常)</li>
+<li>战斗：扫荡**关卡次 (日常)</li>
+<li>好友：添加**个好友 (日常)</li>
+<li>战斗：进行世界Boss达到**名 (周常、成就)</li>
+<li>登录：玩家累计登录**次数可完成 (日常、成就、周常)</li>
+<li>卡牌：玩家培养**次卡牌 (日常)</li>
+<li>卡牌：玩家拥有**张卡牌 (成就)</li>
+<li>卡牌：玩家拥有**张X星卡牌 (成就)</li>
+</ul>
+
+<p>&hellip;我又不是策划就不一一枚举了</p>
+
+<h2 id="功能提取">功能提取</h2>
+
+<ul>
+<li>刷新处理</li>
+<li>任务类型分类</li>
+<li>任务分发</li>
+<li>任务记录</li>
+<li>任务触发</li>
+<li>奖励发送</li>
+<li>任务动态增加</li>
+</ul>
+
+<p>&hellip;仔细想想提取的又不是那个的有条理</p>
+
+<h2 id="设计实现">设计实现</h2>
+
+<p>终于可以晒代码，水篇幅了，作为一个服务器端程序员，讲故事的确不是我所长。</p>
+
+<h3 id="刷新">刷新</h3>
+
+<p>1、玩家每次登录时，上次刷新时间戳和当前时间做比较</p>
+
+<pre><code class="language-js">function isEnableRefresh(lastTime) {
+  let hour5Time = Math.floor(new Date().setHours(3, 0, 0, 0) / 1000);
+  return ((lastTime &lt; hour5Time) &amp;&amp; ((lastTime &lt; hour5Time - 86400) || (utils.timestamp() &gt;= hour5Time)));
+};
+</code></pre>
+
+<p>2、系统每日3天发送刷新事件，每个在线玩家的任务刷新</p>
+
+<pre><code class="language-js">function sysDailyRefresh() {
+  let nextTime = Math.floor(new Date().setHours(3, 0, 0, 0) / 1000) + 86400;
+  let seconds = nextTime - utils.timestamp();
+  setTimeout(() =&gt; {
+    userDailyRefresh();
+    sysDailyRefresh();
+  }, seconds * 1000);
+};
+</code></pre>
+
+<p>3.周任务，需要判断判断再添加今日是否是周一即可</p>
+
+<h3 id="任务类型分类">任务类型分类</h3>
+
+<p>仔细分各种任务类型，再一一枚举</p>
+
+<pre><code class="language-js">const TASK_MODE = {
+    FINISH_TASK: {
+      ALL:            11,  //所有
+    },
+    RANDOM_CARD: {
+      NUM:            21,  //召唤-累计召唤
+    },
+    BATTLE: {
+      MAIN:           31,  //战斗-主线剧情
+      UNLIMITED:      32,  //战斗-无限模式
+      WORLD_BOSS:     33,  //战斗-世界Boss
+    },
+    FRIEND: {
+      HAVE:           41,  //好友-拥有好友
+    },
+    CARD: {
+      LEVEL_DEV:      51,  //卡牌-培养
+      LEVEL:          52,  //卡牌-等级
+      STAR:           53,  //卡牌-星级拥有
+    },
+}
+</code></pre>
+
+<p>再具体细分抽象可以为三类</p>
+
+<ul>
+<li>累计型：需要玩家手动触发的，每次响应累计+1，比如累计登陆、聊天次数</li>
+<li>拥有型：总共拥有多少，比如拥有卡牌数量</li>
+<li>排名型：达到多少名，因为和累计判断相反，故单独抽出来</li>
+<li>ALL型：完成所有任务，这种一般针对日常任务</li>
+</ul>
+
+<h3 id="任务分发">任务分发</h3>
+
+<p>简单的采用玩家上线自动领取，毕竟是个坑钱的手游，那么任务触发的设计情怀。</p>
+
+<h3 id="任务记录">任务记录</h3>
+
+<p>因为都是一些简单的任务，可以抽象成下面几个属性记录即可</p>
+
+<pre><code class="language-js">{
+    &quot;type&quot; : 0 //日常、周常、成就
+    &quot;mode&quot; : 0 //任务具体枚举类型
+    &quot;cfgId&quot; : 0 //对应静态配置ID，用于查询具体
+    &quot;num&quot; : 0 //任务需求数量、名次、等级
+}
+</code></pre>
+
+<p>刷新、完成领取奖励后，直接删除即可。
+任务完成的状态只有玩家领取任务奖励成功才出发。</p>
+
+<h3 id="任务触发">任务触发</h3>
+
+<p>分为条件触发和登录触发两种方式</p>
+
+<h4 id="登录触发">登录触发</h4>
+
+<p>顾名思义，玩家登录后，需要遍历玩家数据，后直接触发任务，主要应对拥有型任务。
+eg:每次玩家上线，都要计算玩家卡组数量，并触发任务发送任务类型、以及卡牌数量。</p>
+
+<h4 id="条件触发">条件触发</h4>
+
+<p>直接举例说明，每次玩家获得卡牌都要计算玩家卡组数量，并触发任务发送任务类型、以及卡牌数量。</p>
+
+<p>其实条件触发基本上所有任务类型都可以截获，但登录触发如果没有的话手动修改数据、新增成就任务等都无法兼容，所以登录触发是有必要的，尤其是针对一次性的成就。</p>
+
+<p>下面是具体针四种抽象的任务类型的响应</p>
+
+<pre><code class="language-js">/**
+ * @description 常规通用任务触发
+ * 累计型
+ * @param {Object} objTask 任务Obj
+ * @param {Number} num 数量
+ * @return {Boolean} 是否移除任务监听
+ */
+function commonTrigger (objTask, num) {
+  let isRemoveListener;
+  do {
+    isRemoveListener = false;
+    let tbObjTask = Config.getTbObjTask(objTask.getAttrInt('type'), objTask.getAttrInt('cfgId'));
+    if(!tbObjTask) {
+      break;
+    }
+    let oldNum = objTask.getAttrInt('num');
+    let maxNum = tbObjTask[&quot;num&quot;];
+    let isMax = (oldNum + num) &gt;= maxNum;
+    let newNum = isMax ? maxNum : (oldNum + num);
+    objTask.setAttrInt('num', newNum);
+    isRemoveListener = isMax;
+  } while(false);
+  return isRemoveListener;
+}
+
+/**
+ * @description 常规通用任务触发
+ * 拥有型
+ * @param {Object} objTask 任务Obj
+ * @param {Number} num 数量
+ * @return {Boolean} 是否移除任务监听
+ */
+function commonHaveTrigger (objTask, num) {
+  let isRemoveListener;
+  do {
+    let tbObjTask = Config.getTbObjTask(objTask.getAttrInt('type'), objTask.getAttrInt('cfgId'));
+    if(!tbObjTask) {
+      break;
+    }
+    let maxNum = tbObjTask[&quot;num&quot;];
+    let isMax = num &gt;= maxNum;
+    let newNum = isMax ? maxNum : num;
+    objTask.setAttrInt('num', newNum);
+    isRemoveListener = isMax;
+  } while(false);
+  return isRemoveListener;
+}
+
+/**
+ * @description 常规通用任务触发
+ * 排名型
+ * @param {Object} objTask 任务Obj
+ * @param {Number} num 名次
+ * @return {Boolean} 是否移除任务监听
+ */
+function commonRankTrigger (objTask, num) {
+  let isRemoveListener;
+  do {
+    let tbObjTask = Config.getTbObjTask(objTask.getAttrInt('type'), objTask.getAttrInt('cfgId'));
+    if(!tbObjTask) {
+      break;
+    }
+    let maxNum = tbObjTask[&quot;num&quot;];
+    let isMax = num &lt;= maxNum;
+    let newNum = isMax ? maxNum : num;
+    objTask.setAttrInt('num', newNum);
+    isRemoveListener = isMax;
+  } while(false);
+  return isRemoveListener;
+}
+
+/**
+ * @description 常规通用任务触发
+ * ALL型
+ * ！此类型有外部任务种类统计任务剩余数量为0时会出发一次
+ */
+function commonAll(objTask, type) {
+  let isRemoveListener;
+  do {
+    isRemoveListener = false;
+    if(objTask.getAttrInt('type') !== type) { //类型相同则完成
+      break;
+    }
+    let tbObjTask = Config.getTbObjTask(objTask.getAttrInt('type'), objTask.getAttrInt('cfgId'));
+    if(!tbObjTask) {
+      break;
+    }
+    let maxNum = tbObjTask[&quot;num&quot;];
+    objTask.setAttrInt(maxNum);
+    isRemoveListener = true;
+  } while(false);
+  return isRemoveListener;
+};
+</code></pre>
+
+<h2 id="小结">小结</h2>
+
+<p>时间准备的不够充足，先写到这里吧，下篇再具体讲解。</p>
+
+    </div>
+
+    
+    <div class="post-copyright">
+  <p class="copyright-item">
+    <span class="item-title">Author</span>
+    <span class="item-content">wangkm</span>
+  </p>
+  <p class="copyright-item">
+    <span class="item-title">LastMod</span>
+    <span class="item-content">2018/07/16</span>
+  </p>
+  
+  
+</div>
+
+    
+    
+
+    <footer class="post-footer">
+      
+
+      
+      <nav class="post-nav">
+        
+          <a class="prev" href="/2018/07/26/%E7%8E%A9%E5%AE%B6%E5%AE%9A%E6%97%B6%E5%99%A8%E6%A8%A1%E5%9D%97%E7%9A%84%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0/">
+            <i class="iconfont icon-left"></i>
+            <span class="prev-text nav-default">玩家定时器模块的设计与实现</span>
+            <span class="prev-text nav-mobile">Prev</span>
+          </a>
+        
+          <a class="next" href="/2018/07/09/%E4%BD%BF%E7%94%A8%E6%B6%88%E6%81%AF%E5%AD%97%E5%85%B8%E5%81%9A%E6%B6%88%E6%81%AF%E6%A0%A1%E9%AA%8C/">
+            <span class="next-text nav-default">使用消息字典做消息校验</span>
+            <span class="next-text nav-mobile">Next</span>
+            <i class="iconfont icon-right"></i>
+          </a>
+      </nav>
+    </footer>
+  </article>
+        </div>
+        
+  
+
+  
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="social-links">
+      <a href="mailto:your@email.com" class="iconfont icon-email" title="email"></a>
+      <a href="http://localhost:1313" class="iconfont icon-stack-overflow" title="stack-overflow"></a>
+      <a href="http://localhost:1313" class="iconfont icon-twitter" title="twitter"></a>
+      <a href="http://localhost:1313" class="iconfont icon-facebook" title="facebook"></a>
+      <a href="http://localhost:1313" class="iconfont icon-linkedin" title="linkedin"></a>
+      <a href="http://localhost:1313" class="iconfont icon-google" title="google"></a>
+      <a href="http://localhost:1313" class="iconfont icon-github" title="github"></a>
+      <a href="http://localhost:1313" class="iconfont icon-weibo" title="weibo"></a>
+      <a href="http://localhost:1313" class="iconfont icon-zhihu" title="zhihu"></a>
+      <a href="http://localhost:1313" class="iconfont icon-douban" title="douban"></a>
+      <a href="http://localhost:1313" class="iconfont icon-pocket" title="pocket"></a>
+      <a href="http://localhost:1313" class="iconfont icon-tumblr" title="tumblr"></a>
+      <a href="http://localhost:1313" class="iconfont icon-instagram" title="instagram"></a>
+  <a href="https://wangkunmeng.github.io/index.xml" type="application/rss+xml" class="iconfont icon-rss" title="rss"></a>
+</div>
+
+<div class="copyright">
+  <span class="power-by">
+    Powered by <a class="hexo-link" href="https://gohugo.io">Hugo</a>
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    Theme - 
+    <a class="theme-link" href="https://github.com/olOwOlo/hugo-theme-even">Even</a>
+  </span>
+
+  
+
+  <span class="copyright-year">
+    &copy; 
+    2018
+    <span class="heart">
+      <i class="iconfont icon-heart"></i>
+    </span>
+    <span class="author">wangkm</span>
+  </span>
+</div>
+    </footer>
+
+    <div class="back-to-top" id="back-to-top">
+      <i class="iconfont icon-up"></i>
+    </div>
+  </div>
+  
+<script src="/lib/highlight/highlight.pack.js?v=20171001"></script><script type="text/javascript" src="/lib/jquery/jquery-3.2.1.min.js"></script>
+  <script type="text/javascript" src="/lib/slideout/slideout-1.0.1.min.js"></script>
+  <script type="text/javascript" src="/lib/fancybox/jquery.fancybox-3.1.20.min.js"></script>
+
+
+<script type="text/javascript" src="/dist/even.min.js?v=3.2.0"></script>
+
+
+
+
+
+
+
+
+</body>
+</html>
